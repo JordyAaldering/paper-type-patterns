@@ -1,0 +1,59 @@
+\subsection{Using type patterns}\label{sec:examples}
+
+Making use of these type patterns, we can extract the shape and the rank of an argument without requiring the use of built-in functions, allowing for simple re-definitions of the functions \texttt{dim} and \texttt{shape}:
+\begin{lstlisting}
+int                      int[d]
+dim(int[d:shp] arr)      shape(int[d:shp] arr)
+{                        {
+    return d;                return shp;
+}                        }
+\end{lstlisting}
+
+\noindent
+In the example of \texttt{shape} we can see how the type pattern notation allows for an intuitive way to express the relation between the rank of the argument and the shape of the result.
+
+Type patterns also allow us to impose constraints between multiple arguments and return values of a function.
+For example, the function signature of shape-polymorphic addition of two floating point arrays can be specified by:
+\begin{lstlisting}
+float[d:shp]
+add(float[d:shp] a, float[d:shp] b)
+{
+    return { iv -> a[iv] + b[iv] };
+}
+\end{lstlisting}
+
+\noindent
+Here the type patterns in the signature demand both arguments to have the exact same shape.
+Additionally it specifies that the shape of the result will also be equal to the shapes of those two inputs.
+
+An example of a more intricate shape relation between argument and result shapes can be seen in a simplified definition of the \texttt{take} function:
+\begin{lstlisting}
+float[n:shp,m:inner]
+take(int[n] shp, float[n:outer,m:inner] arr)
+{
+    return { iv -> arr[iv] | iv < shp };
+}
+\end{lstlisting}
+
+\noindent
+We see here that the result has the same rank as the second argument, where the first \texttt{n} elements of the result shape are defined through the values of the first argument.
+These type patterns demonstrate an interesting case: when looking at the type pattern of argument \texttt{arr} in isolation, we have two features that match against a variable number of ranks captured by the variables \texttt{n} and \texttt{m}.
+This is potentially ambiguous.
+However, in the given context, we have a uniquely determined constraint for \texttt{n} through the shape of the first argument.
+
+This potential ambiguity is inevitable as soon as we have more than one variable-rank feature within a type pattern.
+Fortunately, these cases can be identified and rejected statically, during the translation of type patterns into explicit constraint checking code.
+
+Finally we consider the shape-polymorphic selection function, which uses the \verb|_sel_VxA_| primitive (applied using \texttt{arr[$...$]}) to select a single scalar, or a larger sub-array, from a given array.
+This function will serve as our running example throughout the remainder of this paper.
+\begin{lstlisting}
+int[d:shp]
+sel(int[n] idx, int[n:outer,d:shp] arr)
+{
+    return { iv -> arr[idx ++ iv] | iv < shp };
+}
+\end{lstlisting}
+
+\noindent
+Again, we see here a potential ambiguity between the two variable-rank features of argument \texttt{arr}, captured by the variables \texttt{n} and \texttt{d}.
+This ambiguity is resolved through the occurrence of \texttt{n} within the type pattern of the first argument.

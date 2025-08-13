@@ -1,0 +1,185 @@
+\subsection{Constraint generation}\label{sec:gtc}
+
+The next step is to aggregate all possible constraints that result from type patterns.
+We use a similar approach as in the previous section, recursing through the features of a type pattern and collecting information of the resulting constraints.
+The basic idea is to accumulate an environment of constraints for all variables.
+
+This constraint aggregation poses two particular challenges.
+Firstly, we may find constraints for a single pattern variable within more than one type pattern of a function signature.
+This implies that we cannot look at single type patterns in isolation.
+We resolve this issue by collecting an environment of constraints and by passing this environment from one type pattern within a function signature to the next.
+Secondly, we can have dependencies between constraints:
+As soon as there is a variable-rank feature combined with any other feature, any resolution process can no longer be done in arbitrary order. We record such dependencies as we generate the environment of constraints.
+
+We denote our constraint environment by entries of the form:
+\begin{align*}
+    var \mapsto [\langle{}expr_1,\ deps_1\rangle,\ \dots,\ \langle{}expr_n,\ deps_n\rangle]
+\end{align*}
+
+\noindent
+where $var$ refers to any variable name occurring in a given function signature, be it in a type pattern or an argument name itself.
+Each tuple $\langle{} expr_i,\ deps_i \rangle$ represents a SaC expression $expr_i$ that constitutes the constraint for $var$.
+I.e. at runtime, the value of $var$ needs to be identical to the value of that expression, and $deps_i$ contains the set of variables that stem from variable-rank features and are referred to within $expr_i$.
+
+For example, for a function argument \texttt{int[d,d:shp]} \texttt{v}, we want to infer the following two environment entries:
+\begin{align*}
+    \mathbf{\{}\
+        d   \mapsto [&\langle\texttt{shape}(v)[0],\ \emptyset\rangle, \\
+                     &\langle\texttt{dim}(v)-1,\ \emptyset\rangle] \\
+        shp \mapsto [&\langle\texttt{take}(d,\ \texttt{drop}(1,\ \texttt{shape}(v))),\ \{d\}\rangle]
+    \ \mathbf{\}}
+\end{align*}
+
+\noindent
+For inferring such constraint environments, we define a function: \texttt{G}enerate \texttt{T}ype \texttt{C}onstraints (\texttt{GTC}).
+\begin{gather*}
+    \texttt{GTC}(type\_pattern,\, \cdim,\, \deps,\, \cenv) = \cenv'
+\end{gather*}
+
+\noindent
+It is being successively applied to all type pattern of any given type signature and accumulates a constraint environment \cenv{} for the entire signature
+while doing so.
+In addition to the current type pattern and the constraint environment to be generated,
+it uses two further parameters when
+being applied to each individual type pattern within a function signature.
+These parameters are:
+\begin{enumerate}
+    \item \cdim{}: the current position in the shape vector of the argument, starting with 0.
+    \item \deps{}: a set of variable-rank identifiers encountered so far.
+\end{enumerate}
+
+\noindent
+Following are the recursive cases of the \texttt{GTC} function.
+In the case that we encounter a dot, we only need to increment the current position in the shape.
+Because in this case we do not care about the result, no constraints are added to the environment.
+\begin{gather*}
+    \gtc{type[\tpdot,\rest]}{\cdim}{\deps}{\cenv} \\
+        = \gtc{type[\rest]}{\cdim+1}{\deps}{\cenv}
+\end{gather*}
+
+\noindent
+For constant integers \tpnum{} we similarly increment the current shape position.
+However now we also add a constraint to the environment of the argument with the current dependencies.
+This constraint gets the extent of the current rank from the current shape position, and checks that it is equal to \texttt{n}.
+We write $\cenv[var \mapsto \langle{}expr,\ deps\rangle{}]$ to denote that the environment \cenv{} is extended with a new entry $\langle{}expr,\ deps\rangle{}$ for the constraints list of $var$.
+
+{
+\topskip0pt
+\setlength\abovedisplayskip{0pt}
+\begin{gather*}
+    \gtc{type[\tpnum,\rest]}{\cdim}{\deps}{\cenv} \\
+        = \gtc{type[\rest]}{\cdim+1}{\deps}{ \\ \cenv
+            \envmap{v}{\deps}{\tpnum == \texttt{shape}(v)[\cdim]}}
+\end{gather*}
+}
+
+\noindent
+We have a similar case if we encounter an identifier $id$.
+However we now add a constraint to the environment for $id$ instead.
+\begin{gather*}
+    \gtc{type[id,\rest]}{\cdim}{\deps}{\cenv} \\
+        = \gtc{type[\rest]}{\cdim+1}{\deps}{ \\ \cenv
+            \envmap{id}{\deps}{\texttt{shape}(v)[\cdim]}}
+\end{gather*}
+
+\noindent
+In the case of a shape of fixed length \tpnum{}, we instead increase the current shape position by this fixed amount.
+We also add a constraint for the shape identifier $shp$ with the current dependencies.
+This constraint drops the first \cdim{} dimensions from the shape, and then takes the following \tpnum{} elements to get the $shp$ vector.
+\begin{gather*}
+    \gtc{type[\tpnumshp{shp},\rest]}{\cdim}{\deps}{\cenv} \\
+        = \gtc{type[\rest]}{\cdim+\tpnum}{\deps}{ \\ \cenv
+            \envmap{shp}{\deps}{\texttt{take}(\tpnum,\ \texttt{drop}(\cdim,\ \texttt{shape}(v)))}}
+\end{gather*}
+
+\noindent
+For variable-rank features we have a somewhat similar case.
+Instead of increasing the current position by a fixed value, we increase it by $d$.
+Since $d$ is a variable-rank identifier we add it to the accumulated dependencies.
+We also have a similar constraint for $shp$, where instead we take $d$ elements.
+Here again because $d$ is a variable-rank identifier, we add it to the dependencies of this constraint.
+
+Additionally a constraint for $d$ itself is required.
+We get this constraint from the dimensionality of $v$, by subtracting from it the minimal rank of $v$ found by \texttt{ATP} ($v.\fdim$) as well as the variable-rank identifiers found by \texttt{ATP} ($v.\vdim$), excluding $d$.
+We compute this as $\texttt{dim}(v) - v.\fdim - \texttt{sum}(v.\vdim) + d$, which we hereafter shorten to $\texttt{dimcalc}(v,\ d)$.
+\begin{gather*}
+    \gtc{type[\tpidshp{d}{shp},\rest]}{\cdim}{\deps}{\cenv} \\
+        = \gtc{type[\rest]}{\cdim+d}{\deps \cap \{d\}}{ \\ \cenv
+            \envmap{d}{v.\vdim \setminus \{d\}}{\texttt{dimcalc}(v,\ d)} \\
+            \envmap{shp}{\deps \cap \{d\}}{\texttt{take}(d,\ \texttt{drop}(\cdim,\ \texttt{shape}(v)))}}
+\end{gather*}
+
+\noindent
+Finally we have the cases for \tpstar{} and \tpplus{}.
+In the case of \tpstar{} there is nothing more to do, and we continue with the next feature.
+If instead we encounter a \tpplus{}, we increment the current shape position before continuing.
+\begin{gather*}
+    \gtc{type[\tpstar,\rest]}{\cdim}{\deps}{\cenv} \\
+        = \gtc{type[\rest]}{\cdim}{\deps}{\cenv}
+    \\[2pt]
+    \gtc{type[\tpplus,\rest]}{\cdim}{\deps}{\cenv} \\
+        = \gtc{type[\rest]}{\cdim+1}{\deps}{\cenv}
+\end{gather*}
+
+\noindent
+In certain scenarios it is possible that these generated constraints cause an out-of-bounds selection.
+Consider a variable-rank feature where the input is expected to be of at least rank three.
+Since \texttt{ATP} will convert this type pattern to the type \texttt{int[+]}, a rank one or two input will not be seen as a type error by the type-checker.
+As a result, such a lower rank input will instead cause an out-of-bounds exception in the generated code when trying to construct features that expect an input of at least rank three.
+To avoid generating erroneous code, we additionally add a constraint to ensure that the rank of the argument is large enough to fit the given type pattern.
+
+\noindent
+This is done by comparing the rank of the argument $v$ to the minimal rank that was found by \texttt{ATP} ($v.\fdim$).
+If there are no variable ranks we check whether the rank is exactly equal to the number of known ranks (1), otherwise we check whether the argument has at least that many ranks (2).
+
+This results in the following base case:
+\begin{gather*}
+    \gtc{type[]}{\cdim}{\deps}{\cenv} \\
+        = \begin{cases}
+            \cenv\envmap{v}{\emptyset}{\texttt{dim}(v) == v.\fdim}
+                &\text{if } \vdim = \emptyset
+                \hspace{10pt}(1) \\
+            \cenv\envmap{v}{\emptyset}{\texttt{dim}(v) >= v.\fdim}
+                &\text{otherwise}
+                \hspace{14.5pt}(2)
+        \end{cases}
+\end{gather*}
+
+\noindent
+Consider again the example \texttt{int[5,n,d:shp]} with a mapping \cenv{} that might have been populated by type patterns of previous arguments.
+In each step \texttt{GTC} resolves a single feature from the type pattern.
+This results in an updated environment with a constraint for each identifier, along with a constraint that checks the rank of the argument.
+{\allowdisplaybreaks
+\begin{align*}
+    &\gtc{\texttt{int[\textbf{5},n,d:shp]}}{0}{\emptyset}{\cenv} \\
+    &= \gtc{\texttt{int[\textbf{n},d:shp]}}{1}{\emptyset}{
+        \\ &\hspace{3em} \cenv
+        \envmap{v}{\emptyset}{5 == \texttt{shape}(v)[0]}
+    } \\
+    &= \gtc{\texttt{int[\textbf{d:shp}]}}{2}{\emptyset}{
+        \\ &\hspace{3em} \cenv
+        \envmap{v}{\emptyset}{5 == \texttt{shape}(v)[0]}
+        \\ &\hspace{3.6em}
+        \envmap{n}{\emptyset}{\texttt{shape}(v)[1]}
+    } \\
+    &= \gtc{\texttt{int[]}}{2+d}{\{d\}}{
+        \\ &\hspace{3em} \cenv
+        \envmap{v}{\emptyset}{5 == \texttt{shape}(v)[0]}
+        \\ &\hspace{3.6em}
+        \envmap{n}{\emptyset}{\texttt{shape}(v)[1]}
+        \\ &\hspace{3.6em}
+        \envmap{d}{\emptyset}{\texttt{dimcalc}(v,\ d)}
+        \\ &\hspace{3.6em}
+        \envmap{shp}{\{d\}}{\texttt{take}(d,\ \texttt{drop}(2,\ \texttt{shape}(v)))}
+    } \\
+    &= \cenv
+        \envmap{v}{\emptyset}{5 == \texttt{shape}(v)[0]}
+        \\ &\hspace{1.8em}
+        \envmap{n}{\emptyset}{\texttt{shape}(v)[1]}
+        \\ &\hspace{1.8em}
+        \envmap{d}{\emptyset}{\texttt{dimcalc}(v,\ d)}
+        \\ &\hspace{1.8em}
+        \envmap{shp}{\{d\}}{\texttt{take}(d,\ \texttt{drop}(2,\ \texttt{shape}(v)))}
+        \\ &\hspace{1.8em}
+        \envmap{v}{\emptyset}{\texttt{dim}(v) >= 2}
+\end{align*}}

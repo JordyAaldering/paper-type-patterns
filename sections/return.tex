@@ -1,0 +1,65 @@
+\subsection{Type patterns for return types}
+
+Thus far we have only considered the code generation for type patterns of arguments, but as we have seen in our running selection example, it is also possible to define type patterns on return types.
+\begin{lstlisting}
+int[d:shp]
+sel(int[n] idx, int[n:outer,d:shp] arr)
+{
+    return { iv -> arr[idx ++ iv] | iv < shp };
+}
+\end{lstlisting}
+
+\noindent
+To support this we extend the definition of \texttt{sel} that was given in section~\ref{sec:generation}.
+As opposed to the pre-check function, we insert a post-check function after the result has been computed and check whether that result adheres to the given type pattern constraints.
+As before, we include a guard to avoid these checks from being prematurely optimised away.
+\begin{lstlisting}[escapechar=@]
+inline int[*]
+sel(int[.] idx, int[*] arr)
+{
+    pred = sel_pre(idx, arr);
+    idx, arr = guard(idx, arr,
+                     int[.], int[*], pred);
+    result = sel_impl(idx, arr);
+    result = guard(result, int[*], pred);
+    @\underline{pred'}@ = sel_post(idx, arr, result);
+    result = guard(result, int[*], @\underline{pred'}@);
+    return result;
+}
+\end{lstlisting}
+
+\noindent
+The post-check function behaves similarly to the pre-check function, however it additionally expects the results of the implementation and checks whether those values adhere to the constraints imposed by their type patterns.
+In the case of our selection example, this means that we insert checks to compare the rank and shape of the result against the features \texttt{d} and \texttt{shp} respectively.
+\begin{lstlisting}[escapechar=@]
+inline bool
+sel_post(int[.] idx, int[*] arr, int[*] @\underline{result}@)
+{
+    n = shape(idx)[0];
+    outer = take(n, shape(arr));
+    d = dim(arr) - n;
+    shp = take(d, drop(n, shape(arr)));
+
+    pred = true;
+    pred = d == dim(@\underline{result}@) ? pred
+        : abort("Type pattern error ...");
+    pred = all(shp == shape(@\underline{result}@)) ? pred
+        : abort("Type pattern error ...");
+    return pred;
+}
+\end{lstlisting}
+
+\noindent
+The addition of return-type constraints requires us to determine whether a feature occurring in a return type should be converted to an assignment or to a check within the post-check function.
+In the case of our selection example, the features \texttt{d} and \texttt{shp} of the return type are both already defined by the argument \texttt{arr}, thus in the post-check function we generate two expressions to check whether the rank and shape of the result match \texttt{d} and \texttt{shp} respectively.
+
+However, consider a case where the return type is \texttt{int[m,m]}.
+Because \texttt{m} has not been defined in any of the arguments of the function signature, we are required to first generate an assignment to \texttt{m} instead.
+Namely, we first need to generate \texttt{m = shape(result)[0]}.
+This variable can then be used for the comparison of the second feature, \texttt{m == shape(result)[1]}.
+This distinction allows us to define constraints within a single return type, or between multiple return types, that are not dependent on the arguments.
+
+In order to be able to make this distinction, it is no longer sufficient to only keep track of a single list of assignments and checks.
+Instead, in the algorithm described in section~\ref{sec:resoltion} we make a distinction between assignments and checks that are generated for type patterns of arguments, and assignments and checks that are generated for type patterns of return types.
+All that is required is a case distinction, based on whether the constraint originates from the feature of an argument, or the feature of a return type.
+For the sake of brevity we do not discuss the exact implementation.

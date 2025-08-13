@@ -1,0 +1,92 @@
+\newcommand{\slicepatterns}{\url{https://blog.rust-lang.org/2018/05/10/Rust-1.26.html\#basic-slice-patterns}}
+\newcommand{\subslicepatterns}{\url{https://blog.rust-lang.org/2020/03/12/Rust-1.42.html\#subslice-patterns}}
+\newcommand{\listpatterns}{\url{https://learn.microsoft.com/dotnet/csharp/language-reference/operators/patterns\#list-patterns}}
+
+\section{Related work}
+
+\textbf{Dependent types.}
+Previous work has investigated the effectiveness of dependent types in practise, in languages such as Agda, Idris, Cayenne, and Coq~\cite{agda, idris, cayenne, coq}.
+Such dependently types languages require that a given program can be fully analysed statically.
+This requirement can lead to undecidability and non-terminating type checking, especially in the context of rank-polymorphic programs.
+This requirement of static analysis is often not feasible in practise, for example when reading input from a file, or for other I/O operations.
+These cases would require explicit assertions on program inputs, or might require additional proofs to be given by the developer to aid the type system with proving static correctness.
+This undermines our quest for readability and programming productivity.
+Instead, we implement a hybrid approach that does not enforce that all constraints can be resolved statically, by instead allowing some constraints to be checked dynamically at run-time.
+By doing so we lose the guarantee that any program that can be compiled is also total.
+But we avoid undecidability and non-termination by deferring the constraints that could not be resolved statically to run-time, where they can always be checked dynamically.
+
+% Qube
+Another approach based on dependent types is to instead encode constraints as first-order formulas, and verify them in collaboration with a theorem prover.
+This is the method applied by Qube~\cite{qube}, by using the Yices theorem prover~\cite{yices}.
+This approach rules out all programs with type errors, but also rejects some programs that would actually behave well at run-time.
+Conversely, our approach never rejects programs that will behave well at run-time, but might instead allow programs with type errors, which are then found using run-time checks.
+
+In~\cite{DBLP:conf/fopara/GastelKE15} a dependent type system to specify an energy semantics of a programming language is described.
+This system is extended in~\cite{DBLP:journals/corr/GastelE17} with records and other data types.
+However, an array type is lacking because of lacking bounds in the syntax.
+Using type patterns, these energy semantics can be extended with arrays and used to derive upper bounds for energy consumption.
+
+\textbf{Constraint resolution.}
+Other languages make use of a more restricted form of dependent types, such as Remora~\cite{remora, remora-polymorphism}.
+Remora views type checking and type inference as a constraint resolution problem, as we have done for type pattern analysis.
+Similarly to type patterns, Remora allows multiple ranks to be defined by the same variable in order to impose constraints on these ranks.
+Like us, they have found that static analysis of such rank-polymorphic programs is infeasible without additional proofs from the developer, instead also opting for a partially static and partially dynamic approach.
+However, their approach functions only as a type-checking mechanism.
+Whereas type patterns additionally aim to aid developers in simplifying and debugging their function definitions by allowing them to define arbitrarily complex shape-constraints.
+
+% Futhark
+Much like Remora and our proposed solution, Futhark defines `size parameters'~\cite{futhark, futhark-size-parameters}.
+These size parameters allow developers to specify the ranks of array arguments and return values.
+Just like type patterns, these size parameters can then also be used in their corresponding function bodies.
+Unlike type patterns, this approach does not allow for rank-polymorphism and thus is not applicable to (variable-rank) shape slices.
+Having this restriction makes it possible for Futhark to allow for functions of a higher order, and additionally makes it possible to analyse the correctness of these size parameters fully statically.
+Size parameters cannot be constructed using compound expressions, and must be defined explicitly.
+Size bindings expand upon size parameters by lifting these two restrictions~\cite{size-dependent-types}.
+
+\textbf{Bound analysis and checking.}
+The importance of eliminating array bound checking has been acknowledged in previous work~\cite{dependent-types-bounds, refinement-types} in the context of ML, using a restricted form of dependent types.
+Similarly to type patterns, these methods deal with shape checking~\cite{shape-checking}; a well-studied field that is concerned with the detection of shape errors without handling the data stored within.
+Whereas these approaches always allow for static analysis, in real-world applications they require developers to aid the type-checker with manual proofs.
+Similarly to our approach, these methods allow for a variable to be defined multiple times, declaring that both their values should be the same.
+Whereas we allow for arbitrary constraints to be defined for these variables, these approaches only allow for (in)equality comparisons in order to remain statically decidable.
+
+Alternatively there are approaches that capture pre- and post-conditions imposed by developers~\cite{bounds-specializer}, in order to drive an inference system for statically eliminating out of bounds checks.
+Instead of relying on annotations given by developers,~\cite{dependent-from-tests} infers a constraint system by applying a set of automatically generated test cases.
+The results of which aid a verifier in determining type refinements in dependent types.
+A drawback of this approach is that it is computationally expensive, and can only discover program invariants in a restricted search space.
+
+These bounds can also improve the analysis of memory consumption.~\cite{DBLP:conf/fopara/GastelKE15} describes ResAna, a system that statically derives memory bounds and consumption. These type patterns, even if checked dynamically, would help derive better bounds.
+
+\textbf{Hybrid types.}
+Previous work~\cite{hybrid-type-checking, dynamic-dependent-types} has found that dependent types with full static resolution are not always feasible, and that a hybrid approach might be preferred, particularly in the context of imperative languages.
+Hybrid type systems allow constraints to be defined for arguments and return values.
+They are, like type patterns, then potentially resolved dynamically.
+Examples of languages that implement a hybrid type system are Sage and Spec\#~\cite{sage, specsharp}.
+Additionally, the Deputy tool~\cite{deputy, deputy-2} developed for C allows for the specification of relations between data elements.
+Similar tools have been developed for C, such as CCured and Cyclone~\cite{ccured, cyclone}.
+
+Whereas such languages allow constraints to be defined on variables of any type, the proposed type patterns can be applied only to structures that have a, potentially user-defined, definition of rank and shape.
+This restriction allows us to better tailor our solution to arrays, which results in a simple syntax that allows the same variable to be used in multiple constraints, as well as directly in the function body.
+Additionally, this restriction allows us to provide more descriptive error messages.
+
+\textbf{Pattern matching.}
+The concept of pattern matching is integral to our approach.
+As the shape and rank of arrays are values themselves, such an approach feels natural.
+Whereas pattern matching is normally applied to values within the function body, we propose a hybrid approach that makes this pattern a part of an argument's type in the function signature.
+% Pattern matching arrays in other languages
+Pattern matching on array elements is already possible in a large selection of other languages.
+Examples of these are: structural pattern matching in Python~\cite{pattern-matching-python}, (sub)slice patterns in Rust\footnote{\slicepatterns}\textsuperscript{,}\footnote{\subslicepatterns}, and list patterns in C\#\footnote{\listpatterns}.
+Whereas we match on the shapes and ranks of arrays, these approaches match on array elements and do
+not allow for the definition of constraints through multiple definitions of the same identifier.
+
+% Active patterns & non-linear pattern matching
+Previous work~\cite{active-patterns, non-linear-backtracking, non-linear-scoping} investigates how pattern matching can effectively be applied to unfree data types.
+Unfree data types are types whose data has no canonical form, such as sets.
+For example, the forms $\{ 1, 2 \}$, $\{ 2, 1 \}$, and $\{ 1, 2, 1 \}$ all denote the same set.
+Non-linear pattern matching allows one to pattern match on such unfree data types, independently of their internal representation.
+These approaches share similarities with type patterns, because they also separate the representation of a data type from its actual data elements.
+
+\textbf{Single Assignment C.}
+Our work is based on related work in the context of the SaC compiler~\cite{sac-contracts, sac-user-constraints, sac-hybrid-types}, which investigates how constraints on array shapes can be introduced.
+We expand upon this work by integrating such constraints into function signatures, creating a stronger connection between the function signature and the shapes of its arguments and return values, as well as allowing for the generation of descriptive and precise error messages.
+Additionally we investigate how these constraints can be inserted into the code optimally, potentially allowing for more static analysis and better optimisation.

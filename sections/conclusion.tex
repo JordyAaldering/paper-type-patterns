@@ -1,0 +1,36 @@
+\section{Conclusions}
+
+We present a new notation for array types which enables the specification of dependent type signatures that supports rank-polymorphism and allows for arbitrarily complex conditions, while maintaining flexibility and a high level of code readability.
+
+Our notation aims to simplify earlier related work, by allowing shape and rank reuse across constraints and function bodies, reducing code complexity.
+By using a hybrid approach we are able to support rank-polymorphic programs, whilst still allowing for as much static analysis as possible, only dynamically checking those constraints that could not be resolved statically.
+We provide generic rules and algorithms which make it possible to implement type patterns into different compilers, and have shown that this is possible by implementing type patterns in SaC, and by applying them to the SaC standard library.
+As it turns out, the use of type patterns within the standard library does not only increase code readability but it also reduces the source code size considerably as shape deconstructing functions usually can be avoided within function definitions.
+Additionally, the use of type patterns exposed a previously unknown bug, that was hidden by a multitude of \texttt{shape} and \texttt{dim} operations.
+Furthermore the use of type patterns in education at the Radboud University has increased the student's understanding of array programs, by enabling them to better reason about shape relations between arguments and return values.
+These applications show the feasibility and effectiveness of type patterns in practise.
+
+% Error messages
+Another benefit of type patterns is the insertion of more descriptive and precise error messages.
+Previously, without additional work from the programmer and convoluting the code with manual checks, the cause of an error could be hard to track down due to a disconnect between the producer and consumer of an erroneous argument.
+With type patterns we find errors immediately when a function is applied erroneously, potentially already at compile time.
+We provide descriptive error messages, aiding programmers in finding and fixing bugs faster.
+
+% Futhark
+Although we develop our ideas in the context of SaC they are transferable
+to other languages. In particular array languages such as Futhark most likely could directly incorporate these ideas.
+Since Futhark already supports size parameters within its type system, the type pattern approach might be a suitable vehicle to introduce rank-polymorphism to Futhark without having to implement a fully dependent type system.
+
+% Portability to other languages
+Whereas we chose to implement type patterns in the context of array programming, the ideas and rules provided in this paper are applicable to any language with types that have some (user-defined) rank and shape-component.
+The rules and algorithms provided in this paper, whilst somewhat tailored to the context of SaC, are defined generically so that they can be modified for, and implemented into, other languages.
+Because we allow for user-defined overloads of the rank and shape functions in SaC, type patterns can be applied to any type that implements these definitions.
+For example, a user might define the rank of a string to be equal to the number of words, with the shape being the length of each word.
+Alternatively they might define the rank of a tree to be equal to the number of leaves, and the shape equal to the depth of each of those leaves,
+or they might define the rank to be the number of strongly connected components in a graph, with the shape being the size of each of those strongly connected components.
+This allows type patterns to be beneficial in contexts other than array programming.
+
+% Future work
+Future work might investigate how the additional shape information provided by type patterns can be delegated throughout the program to allow for even further static analysis, and to potentially use this information for further optimisation.
+Additionally, one might investigate whether a type-checker can be modified to find more compile-time errors by considering the relation between type patterns of return types, and the type patterns of following applications of these return types.
+Potentially allowing for type errors based solely on function signatures.

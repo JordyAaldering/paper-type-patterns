@@ -1,0 +1,133 @@
+\section{Single assignment C}
+
+We introduce type patterns in the context of the SaC programming language.
+SaC is a functional array language that, as the name suggests, resembles the syntax of imperative languages such as C, whilst remaining side-effect-free~\cite{sac, sac-productivity}.
+Although SaC programs might look imperative, assignments are considered cascading let expressions, whereas loops are implemented as tail-recursive functions.
+One of the distinguishing features of SaC is its support for rank-polymorphism, i.e. the ability to define functions that take arrays of arbitrary unknown rank as arguments.
+In SaC all data structures are considered arrays, making it a fitting target for our implementation of type patterns.
+
+\subsection{Array types}\label{sec:types}
+
+Arrays in SaC are internally represented by three values: an integer describing the rank of the array, a vector of integers containing the length along each axis, i.e. the shape, and a vector containing all data values in a flattened notation. Table~\ref{tab:array} shows some examples of arrays, along with their internal representations.
+
+\begin{table}[ht!]
+\newcommand{\rsd}[3]{%
+    \begin{tabular}{ll}
+        rank:  & #1   \\
+        shape: & [#2] \\
+        data:  & [#3]
+    \end{tabular}\vspace{2pt}\\\hline\noalign{\vskip 2pt}}
+\begin{tabular}{cl}\hline\noalign{\vskip 2pt}
+    $\begin{pmatrix}
+        1 & 2 & 3 \\
+        4 & 5 & 6 \\
+        7 & 8 & 9
+    \end{pmatrix}$    & \rsd{2}{3,3}{1,2,3,4,5,6,7,8,9}
+    [1, 2, 3, -4, -5] & \rsd{1}{5}{1,2,3,-4,-5}
+    [[1, 2, 3]]       & \rsd{2}{1,3}{1,2,3}
+    0.5               & \rsd{0}{}{0.5}
+\end{tabular}
+\caption{Array representation in SaC}
+\label{tab:array}
+\end{table}
+
+\noindent
+Note that the rank is always equal to the length of the shape vector, and that the product of the shape vector is equal to the total number of elements in the array.
+
+This array information will always become fully available during run-time, but might already be partially known during compile-time.
+Namely, we might be able to infer statically the rank, shape, or even the values of an array.
+We distinguish between four cases of statically known information:
+either we have an \texttt{A}rray of \texttt{K}nown \texttt{V}alues (AKV),
+an \texttt{A}rray with a statically \texttt{K}nown \texttt{S}hape (AKS),
+an \texttt{A}rray where we only \texttt{K}now the \texttt{D}imensionality (AKD),
+or we have an \texttt{A}rray where even the \texttt{D}imensionality is \texttt{U}nknown and we have no static knowledge at all (AUD).
+Figure~\ref{fig:hierarchy} shows the hierarchy of these types, using integer arrays as an example.
+See \cite{sac-array} for further reading.
+
+\begin{figure}[hbt]
+\small
+\begin{tikzpicture}
+    % AKS scalar
+    \node (c) {\texttt{int}};
+    % AKS vector
+    \node (i1) [right=3mm of c]  {\texttt{int[1]}};
+    \node (i2) [right=0mm of i1] {\texttt{int[2]}};
+    \node[minimum width=8mm, minimum height=5mm] (in) [right=1mm of i2] {\dots{}};
+    % AKS matrix
+    \node (i11) [right=3mm of in]  {\texttt{int[1,1]}};
+    \node (i12) [right=0mm of i11] {\texttt{int[1,2]}};
+    \node[minimum width=8mm, minimum height=5mm] (inn) [right=0.5mm of i12] {\dots{}};
+        % AKD
+        \node (i)   [above=1cm of i2]  {\texttt{int[.]}};
+        \node (ii)  [above=1cm of i11] {\texttt{int[.,.]}};
+        \node[minimum width=8mm, minimum height=5mm] (iii) [right=1cm of ii]  {\dots{}};
+            % AUD
+            \node (plus) [above right=1cm and 2mm of i] {\texttt{int[+]}};
+            \node (star) [above=1cm of plus] {\texttt{int[*]}};
+
+    \draw[->] (star) -- (plus);
+    \draw[->] (star) -- (c);
+
+    \draw[->] (plus) -- (i);
+    \draw[->] (plus) -- (ii);
+    \draw[->] (plus) -- (iii);
+
+    \draw[->] (i) -- (i1);
+    \draw[->] (i) -- (i2);
+    \draw[->] (i) -- (in);
+
+    \draw[->] (ii) -- (i11);
+    \draw[->] (ii) -- (i12);
+    \draw[->] (ii) -- (inn);
+
+    \draw[dotted, line width=1pt] (-0.3,2.1) -- (7.3,2.1);
+    \draw[dotted, line width=1pt] (-0.3,0.7) -- (7.3,0.7);
+
+    \node at (7,2.3) {AUD};
+    \node at (7,1.9) {AKD};
+    \node at (7,0.5) {AKS};
+\end{tikzpicture}
+\caption{Hierarchy of integer array types in SaC}
+\label{fig:hierarchy}
+\end{figure}
+
+\subsection{Domain constraints}
+
+In order to more efficiently check domain constraints imposed by primitive operations on arrays, such as array selection, SaC offers a hybrid approach~\cite{sac-contracts}.
+During compilation it inserts checks around primitive functions, such as around the built-in element selection primitive \verb|_sel_VxA_|.
+These inserted checks might be statically resolved based on the values, shapes, or ranks of the input.
+Depending on whether the arguments are AKV, AKS, or AKD, certain checks can be statically resolved.
+
+Consider this element selection example.
+This built-in function expects an array and an index vector with as many elements as the rank of that array.
+This index vector must be non-negative and each element must be less than the corresponding shape-element of the array.
+It always returns the scalar value at that exact index, and does not allow for the selection of a larger sub-array.
+We require two constraints: one to ensure that the length of the selection vector is equal to the rank of the array, and one to check that each value in the selection vector is in bounds of the shape of the array.
+Here we can statically resolve the first constraint if the index vector is AKS and the array is only AKD.
+Whereas to statically resolve the second constraint we require that the index vector is AKV and the array is AKS.
+
+\subsection{Tensor comprehension}
+
+SaC allows for rank- and shape-invariant programming by means of `tensor comprehensions' \cite{sac-tensor}.
+Essentially, tensor comprehensions are a mapping from index vectors to values.
+The result of a tensor comprehension is an array, whose shape depends on the range of these index vectors.
+For example, we can use tensor comprehensions to increment all values in the variable-rank array \texttt{arr}.
+\begin{lstlisting}
+inc = { iv -> arr[iv] + 1 };
+\end{lstlisting}
+
+\noindent
+This index vector \texttt{iv} is a variable-length vector, where the length is based on the usages of \texttt{iv}.
+If \texttt{arr} is for example an \texttt{N$\times$M} matrix, \texttt{iv} is a two-element index vector that is repeatedly applied to the increment expression, with values ranging from \texttt{[0,0]} to \texttt{[N-1,M-1]}.
+
+The range of the index vector can usually be inferred automatically from the uses of \texttt{iv}, but may also be defined manually.
+For example, we might only want to apply the tensor comprehension to a sub-array of \texttt{arr}.
+\begin{lstlisting}
+shp = shape(arr) / 2;
+inc = { iv -> arr[iv] + 1 | iv < shp };
+\end{lstlisting}
+
+\noindent
+Here we denote that \texttt{iv} ranges up until and excluding the vector \texttt{shp}.
+Because no lower bound is given, it is set to a zero-element vector of the same rank as \texttt{shp}.
+Note that the shape of the result \texttt{inc} depends on the range of the index vector \texttt{iv} and not on the array \texttt{arr}, the shape of \texttt{inc} will thus be \texttt{shp} and not \texttt{shape(a)}.

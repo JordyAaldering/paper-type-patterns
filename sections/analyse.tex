@@ -1,0 +1,135 @@
+\section{Transforming type patterns}
+
+Rather than mapping type patterns and their constraints into some form of dependent types, we instead map them into the existing type system of SaC along with a set of constraints that are inserted into the program.
+Revisiting the signature of the selection function from the previous section, we can see that it combines multiple variable-rank features, across multiple argument and return types.
+\begin{lstlisting}
+int[d:shp]
+sel(int[n] idx, int[n:outer,d:shp] arr)
+\end{lstlisting}
+
+\noindent
+The rank and shape of the result of this function must match \texttt{d} and \texttt{shp} respectively, which are defined by the type pattern of argument \texttt{arr}.
+However, that argument has two variable-rank features, captured by the variables \texttt{n} and \texttt{d}.
+In this case the value of \texttt{n} is required before the value of \texttt{d} can be computed.
+We compute \texttt{n} from the length of the index vector \texttt{idx}, after which we are able to compute the values of \texttt{d} and \texttt{shp}, which finally provides us with the rank and shape of the result.
+
+From this example it becomes clear that the order in which type patterns are resolved matters.
+We might need to switch between multiple arguments and features in order to be able to resolve complicated and intertwined dependencies.
+To cater for this, we consider type patterns as a constraint resolution problem.
+We do so by not only generating the relevant constraints for each feature, but by also including the dependencies that need to be resolved, i.e., the values we need before that constraint can be resolved.
+
+\subsection{Type pattern analysis}\label{sec:atp}
+
+As a first step, we convert type patterns to SaC types.
+Looking at the selection example, the index vector is a rank-one array of length \texttt{n}, but because we do not statically know \texttt{n} we have no choice but to convert it to the SaC type \texttt{int[\tpdot]}.
+The array argument consists of two variable-rank features, both of which could be empty, thus now the only fitting SaC type is \texttt{int[*]}.
+Similarly for the return value, which has a single variable-rank feature of which we have no static knowledge.
+Consequently, we need to map the type patterns of the selection function to:
+\begin{lstlisting}
+int[*]
+sel(int[.] idx, int[*] arr)
+\end{lstlisting}
+
+\noindent
+We formalise this process by means of a recursive transformation function: \texttt{A}nalyse \texttt{T}ype \texttt{P}atterns (\texttt{ATP}).
+\begin{gather*}
+    \atp{type\_pattern}{\fshp}{\fdim}{\vdim} \\
+        = (sac\_type,\ \fshp',\ \fdim',\ \vdim')
+\end{gather*}
+
+\noindent
+It traverses through the given type pattern, feature by feature, collects information about the features seen so far, until it returns a SaC type along with the information accumulated in three additional parameters:
+\begin{enumerate}
+    \item \fshp{}: a list of known shape components.
+    We denote these by a list of integers enclosed in square brackets, and we start \texttt{ATP} with \texttt{[]}.
+    \item \fdim{}: an integer for the minimal number of ranks required, starting with 0.
+    \item \vdim{}: a list containing the rank identifiers of variable-rank features (such as \texttt{*} and \texttt{d:shp}).
+    We denote these by a list of identifiers enclosed in square brackets, starting with \texttt{[]}.
+\end{enumerate}
+
+\noindent
+The different cases of \texttt{ATP} directly follow the different options for pattern features.
+When the feature is either an individual dot symbol or a variable, we increment \fdim{} to reflect the need for exactly one dimension.
+\begin{gather*}
+    \atp{type[\tpdot,\rest]}{\fshp}{\fdim}{\vdim} \\
+        = \atp{type[\rest]}{\fshp}{\fdim+1}{\vdim}
+    \\[2pt]
+    \atp{type[id,\rest]}{\fshp}{\fdim}{\vdim} \\
+        = \atp{type[\rest]}{\fshp}{\fdim+1}{\vdim}
+\end{gather*}
+In our rule, we use $\rest$ to denote the (possible empty) remaining features of the type pattern which are needed for the recursive step.
+
+\noindent
+Similarly for integers \tpnum{}, but since that value describes the extent of a rank, we also add that integer to the list of known shapes.
+This is the only case where the number of known shapes is changed.
+\begin{gather*}
+    \atp{type[\tpnum,\rest]}{\fshp}{\fdim}{\vdim} \\
+        = \atp{type[\rest]}{\fshp \text{ ++ } [\tpnum]}{\fdim+1}{\vdim}
+\end{gather*}
+
+\noindent
+If instead we match on a shape-component with some constant non-negative integer rank \texttt{n}, that feature describes the shape-component of the following \texttt{n} ranks, so we increase the number of known ranks by that amount.
+We ignore the $shp$ identifier because it has no impact on the resulting type.
+\begin{gather*}
+    \atp{type[\tpnumshp{shp},\rest]}{\fshp}{\fdim}{\vdim} \\
+        = \atp{type[\rest]}{\fshp}{\fdim+\tpnum}{\vdim}
+\end{gather*}
+
+\noindent
+When this rank is instead an identifier $d$, we append that identifier to the list of variable ranks.
+We do not increase the number of known ranks, because $d$ is potentially zero.
+\begin{gather*}
+    \atp{type[\tpidshp{d}{shp},\rest]}{\fshp}{\fdim}{\vdim} \\
+        = \atp{type[\rest]}{\fshp}{\fdim}{\vdim \text{ ++ } [d]}
+\end{gather*}
+
+\noindent
+Finally, when we encounter a \tpstar{} we simply add it to the list of variable ranks as well.
+We have a similar case if we encounter a \tpplus{}, but since it describes a shape with a non-zero rank, we also increment the number of known ranks.
+\begin{gather*}
+    \atp{type[\tpstar,\rest]}{\fshp}{\fdim}{\vdim} \\
+        = \atp{type[\rest]}{\fshp}{\fdim}{\vdim \text{ ++ } [\tpstar{}]}
+    \\[2pt]
+    \atp{type[\tpplus,\rest]}{\fshp}{\fdim}{\vdim} \\
+        = \atp{type[\rest]}{\fshp}{\fdim+1}{\vdim \text{ ++ } [\tpstar{}]}
+\end{gather*}
+
+\noindent
+Once the function is applied to all features,
+the resulting SaC type can be determined:
+\begin{gather*}
+    \atp{type[]}{\fshp}{\fdim}{\vdim} = (T,\ \fshp,\ \fdim,\ \vdim) \\
+        \text{where} \\
+        T = \begin{cases}
+            type\texttt{[*]}
+                &\text{if } |\vdim| > 0
+                \text{ and } \fdim =\hspace{0.6pt} 0 \\
+            type\texttt{[+]}
+                &\text{if } |\vdim| > 0
+                \text{ and } \fdim > 0 \\
+            type[\tpdot_{_1}, ..., \tpdot_{_n}]
+                &\text{if } |\vdim| =\hspace{0.6pt} 0
+                \text{ and } \fdim = n > |\fshp| \\
+            type[\fshp]
+                &\text{if } |\vdim| =\hspace{0.6pt} 0
+                \text{ and } \fdim = |\fshp|
+        \end{cases}
+\end{gather*}
+
+\noindent
+If \vdim{} is not empty, the type has an unknown rank that is at least of length \fdim{}.
+Otherwise, we statically know that the rank of the array is equal to \fdim{}.
+Furthermore, if the number of known shapes and ranks are equal, the type pattern only contains constant rank sizes, such as \texttt{int[5,3,7]}, and thus the shape is statically known.
+
+As an example we consider a type pattern \texttt{int[5,n,d:shp]}.
+Applying \texttt{ATP} to it gives:
+\begin{align*}
+    &\atp{\texttt{int[\textbf{5},n,d:shp]}}{0}{0}{[]} \\
+    &= \atp{\texttt{int[\textbf{n},d:shp]}}{1}{1}{[]} \\
+    &= \atp{\texttt{int[\textbf{d:shp}]}}{1}{2}{[]} \\
+    &= \atp{\texttt{int[]}}{1}{2}{[d]} \\
+    &= (\texttt{int[+]},\ 1,\ 2,\ [d])
+\end{align*}
+
+\noindent
+This results in a known rank of at least two, but because there are also variable ranks the resulting SaC type is \texttt{int[+]}.
