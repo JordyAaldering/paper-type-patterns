@@ -6,6 +6,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
     - uses: actions/checkout@v4
     - uses: xu-cheng/latex-action@v4
@@ -14,5 +16,4 @@ jobs:
     - uses: svenstaro/upload-release-action@v2
       with:
         file: main.pdf
-        release_name: main.pdf
         overwrite: true
