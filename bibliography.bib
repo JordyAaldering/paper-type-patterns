@@ -1,0 +1,663 @@
+
+@inproceedings{polymorphism-matters,
+title={Why Rank-Polymorphism Matters},
+author={Scholz, Sven-Bodo},
+booktitle={22. Kolloquium Programmiersprachen und Grundlagen der Programmierung},
+pages={146}
+}
+
+@article{sac,
+author={Grelck, Clemens and Scholz, Sven-Bodo},
+title={SAC--A Functional Array Language for Efficient Multi-threaded Execution},
+journal={International Journal of Parallel Programming},
+year={2006},
+month={Aug},
+day={01},
+volume={34},
+number={4},
+pages={383-427},
+abstract={We give an in-depth introduction to the design of our functional array programming language SaC, the main aspects of its compilation into host machine code, and its parallelisation based on multi-threading. The language design of SaC aims at combining high-level, compositional array programming with fully automatic resource management for highly productive code development and maintenance. We outline the compilation process that maps SaC programs to computing machinery. Here, our focus is on optimisation techniques that aim at restructuring entire applications from nested compositions of general fine-grained operations into specialised coarse-grained operations. We present our implicit parallelisation technology for shared memory architectures based on multi-threading and discuss further optimisation opportunities on this level of code generation. Both optimisation and parallelisation rigorously exploit the absence of side-effects and the explicit data flow characteristic of a functional setting.},
+issn={1573-7640},
+doi={10.1007/s10766-006-0018-x},
+url={https://doi.org/10.1007/s10766-006-0018-x}
+}
+
+@article{sac-array,
+title={Single Assignment C: efficient support for high-level array operations in a functional setting},
+author={Scholz, Sven-Bodo},
+journal={Journal of functional programming},
+volume={13},
+number={6},
+pages={1005-1059},
+year={2003},
+DOI={10.1017/S0956796802004458},
+publisher={Cambridge University Press}
+}
+
+@inbook{sac-productivity,
+author="Grelck, Clemens",
+title="Single Assignment C (SAC) High Productivity Meets High Performance",
+bookTitle="Central European Functional Programming School: 4th Summer School, CEFP 2011, Budapest, Hungary, June 14-24, 2011, Revised Selected Papers",
+year="2012",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="207-278",
+abstract="We present the ins and outs of the purely functional, data parallel programming language SaC (Single Assignment C). SaC defines state- and side-effect-free semantics on top of a syntax resembling that of imperative languages like C/C++/C{\#} or Java: functional programming with curly brackets. In contrast to other functional languages data aggregation in SaC is not based on lists and trees, but puts stateless arrays into the focus.",
+isbn="978-3-642-32096-5",
+doi="10.1007/978-3-642-32096-5_5",
+url="https://doi.org/10.1007/978-3-642-32096-5_5"
+}
+
+@inproceedings{sac-contracts,
+author="Herhut, Stephan
+and Scholz, Sven-Bodo
+and Bernecky, Robert
+and Grelck, Clemens
+and Trojahner, Kai",
+editor="Chitil, Olaf
+and Horv{\'a}th, Zolt{\'a}n
+and Zs{\'o}k, Vikt{\'o}ria",
+title="From Contracts Towards Dependent Types: Proofs by Partial Evaluation",
+booktitle="Implementation and Application of Functional Languages",
+year="2008",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="254-273",
+abstract="The specification and resolution of non-trivial domain constraints has become a well-recognised measure for improving the stability of large software systems. In this paper we propose an approach based on partial evaluation which tries to prove such constraints statically as far as possible and inserts efficient dynamic checks otherwise.",
+isbn="978-3-540-85373-2"
+}
+
+@inproceedings{sac-tensor,
+author={Scholz, Sven-Bodo and \v{S}inkarovs, Artjoms},
+title={Tensor Comprehensions in SaC},
+year={2021},
+isbn={9781450375627},
+publisher={Association for Computing Machinery},
+address={New York, NY, USA},
+url={https://doi.org/10.1145/3412932.3412947},
+doi={10.1145/3412932.3412947},
+abstract={We propose a new notation for data parallel operators on multi-dimensional arrays named tensor comprehensions. This notation combines the basic principle of array-comprehensions with syntactical shortcuts very close to those found in the so-called Tensor Notations used in Physics and Mathematics. As a result, complex operators with rich semantics can be defined concisely. The key to this conciseness lies in the ability to define shape-polymorphic operations combined with the ability to infer array shapes from the immediate context. The paper provides a definition of the proposed notation, a formal shape inference process, as well as a set of re-write rules that translates tensor comprehensions as a zero-cost syntactic sugar into standard SaC expressions.},
+booktitle={Proceedings of the 31st Symposium on Implementation and Application of Functional Languages},
+articleno={15},
+numpages={13},
+location={Singapore, Singapore},
+series={IFL '19}
+}
+
+@inproceedings{sac-hybrid-types,
+title={Towards Hybrid Array Types in SaC},
+author={Grelck, Clemens and Tang, Fangyong and others},
+booktitle={Software Engineering (Workshops)},
+series={{CEUR} Workshop Proceedings},
+volume={1129},
+pages={129-145},
+publisher={CEUR-WS.org},
+year={2014},
+url={https://ceur-ws.org/Vol-1129/paper44.pdf},
+}
+
+@inproceedings{sac-symbiotic,
+author="Bernecky, Robert
+and Herhut, Stephan
+and Scholz, Sven-Bodo",
+editor="Moraz{\'a}n, Marco T.
+and Scholz, Sven-Bodo",
+title="Symbiotic Expressions",
+booktitle="Implementation and Application of Functional Languages",
+year="2010",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="107-124",
+abstract="We introduce symbiotic expressions, a method for algebraic simplification within a compiler, in lieu of an SMT solver, such as Yices or the Omega Calculator. Symbiotic expressions are compiler-generated expressions, temporarily injected into a program's abstract syntax tree (AST). The compiler's normal optimizations interpret and simplify those expressions, making their results available for the compiler to use as a basis for decisions about further optimization of the source program. The expressions are symbiotic, in the sense that both parties benefit: an optimization benefits, by using the compiler itself to simplify expressions that have been attached, lamprey-like, to the AST by the optimization; the program being compiled benefits, from improved run-time in both serial and parallel environments.",
+isbn="978-3-642-16478-1"
+}
+
+@inproceedings{sac-user-constraints,
+title={User-defined shape constraints in SaC},
+author={Tang, Fangyong and Grelck, Clemens and others},
+booktitle={DRAFT PROCEEDINGS OF THE 24TH SYMPOSIUM ON IMPLEMENTATION AND APPLICATION OF FUNCTIONAL LANGUAGES (IFL 2012)},
+pages={416-434},
+year={2012}
+}
+
+@article{indexed,
+title={Indexed types},
+journal={Theoretical Computer Science},
+volume={187},
+number={1},
+pages={147-165},
+year={1997},
+issn={0304-3975},
+doi={https://doi.org/10.1016/S0304-3975(97)00062-5},
+url={https://www.sciencedirect.com/science/article/pii/S0304397597000625},
+author={Christoph Zenger},
+keywords={Type system, Functional languages, Type inference, Dependent types, Constraints},
+abstract={A new extension of the Hindley/Milner type system is proposed. The type system has algebraic types, that have not only type parameters but also value parameters (indices). This allows for example to parameterize matrices and vectors by their size and to check size compatibility statically. This is especially of interest in computer algebra.}
+}
+
+@inproceedings{dependent-types,
+author={Xi, Hongwei and Pfenning, Frank},
+title={Dependent Types in Practical Programming},
+year={1999},
+isbn={1581130953},
+publisher={Association for Computing Machinery},
+address={New York, NY, USA},
+url={https://doi.org/10.1145/292540.292560},
+doi={10.1145/292540.292560},
+abstract={We present an approach to enriching the type system of ML with a restricted form of dependent types, where type index objects are drawn from a constraint domain C, leading to the DML(C) language schema. This allows specification and inference of significantly more precise type information, facilitating program error detection and compiler optimization. A major complication resulting from introducing dependent types is that pure type inference for the enriched system is no longer possible, but we show that type-checking a sufficiently annotated program in DML(C) can be reduced to constraint satisfaction in the constraint domain C. We exhibit the unobtrusiveness of our approach through practical examples and prove that DML(C) is conservative over ML. The main contribution of the paper lies in our language design, including the formulation of type-checking rules which makes the approach practical. To our knowledge, no previous type system for a general purpose programming language such as ML has combined dependent types with features including datatype declarations, higher-order functions, general recursions, let-polymorphism, mutable references, and exceptions. In addition, we have finished a prototype implementation of DML(C) for an integer constraint domain C, where constraints are linear inequalities (Xi and Pfenning 1998).},
+booktitle={Proceedings of the 26th ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
+pages={214--227},
+numpages={14},
+location={San Antonio, Texas, USA},
+series={POPL '99}
+}
+
+@article{cube,
+title={Dependently typed array programs don’t go wrong},
+journal={The Journal of Logic and Algebraic Programming},
+volume={78},
+number={7},
+pages={643-664},
+year={2009},
+note={The 19th Nordic Workshop on Programming Theory (NWPT 2007)},
+issn={1567-8326},
+doi={https://doi.org/10.1016/j.jlap.2009.03.002},
+url={https://www.sciencedirect.com/science/article/pii/S1567832609000411},
+author={Kai Trojahner and Clemens Grelck},
+keywords={Array programming, Dependent types, Program verification},
+abstract={The array programming paradigm adopts multidimensional arrays as the fundamental data structures of computation. Array operations process entire arrays instead of just single elements. This makes array programs highly expressive and introduces data parallelism in a natural way. Array programming imposes non-trivial structural constraints on ranks, shapes, and element values of arrays. A prominent example where such constraints are violated are out-of-bound array accesses. Usually, such constraints are enforced by means of run time checks. Both the run time overhead inflicted by dynamic constraint checking and the uncertainty of proper program evaluation are undesirable. We propose a novel type system for array programs based on dependent types. Our type system makes dynamic constraint checks obsolete and guarantees orderly evaluation of well-typed programs. We employ integer vectors of statically unknown length to index array types. We also show how constraints on these vectors are resolved using a suitable reduction to integer scalars. Our presentation is based on a functional array calculus that captures the essence of the paradigm without the legacy and obfuscation of a fully-fledged array programming language.}
+}
+
+@inproceedings{remora,
+author={Slepak, Justin and Manolios, Panagiotis and Shivers, Olin},
+title={Rank Polymorphism Viewed as a Constraint Problem},
+year={2018},
+isbn={9781450358521},
+publisher={Association for Computing Machinery},
+address={New York, NY, USA},
+url={https://doi.org/10.1145/3219753.3219758},
+doi={10.1145/3219753.3219758},
+abstract={Rank polymorphism serves as a type of control flow used in array-oriented languages, where functions are automatically lifted to operate on high-dimensional arguments. The iteration space is derived directly from the shape of the data, presenting a challenge to compilation. A type system can characterize data shape, though the level of detail is beyond what can be reasonably expected from entirely human-generated annotations. The task of checking or inferring shapes can be phrased as solving constraints in the theory of the free monoid over the natural numbers, but the constraints involve both universal and existential quantification. Here is a plan of attack for leveraging past work on decision procedures, which has generally focused on the purely existential fragment of the theory.},
+booktitle={Proceedings of the 5th ACM SIGPLAN International Workshop on Libraries, Languages, and Compilers for Array Programming},
+pages={34--41},
+numpages={8},
+keywords={word equations, indexed types, first-order logic, type inference, free monoid, array-oriented languages},
+location={Philadelphia, PA, USA},
+series={ARRAY 2018}
+}
+
+@inproceedings{remora-polymorphism,
+author="Slepak, Justin
+and Shivers, Olin
+and Manolios, Panagiotis",
+editor="Shao, Zhong",
+title="An Array-Oriented Language with Static Rank Polymorphism",
+booktitle="Programming Languages and Systems",
+year="2014",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="27-46",
+abstract="The array-computational model pioneered by Iverson's languages APL and J offers a simple and expressive solution to the ``von Neumann bottleneck.'' It includes a form of rank, or dimensional, polymorphism, which renders much of a program's control structure implicit by lifting base operators to higher-dimensional array structures. We present the first formal semantics for this model, along with the first static type system that captures the full power of the core language.",
+isbn="978-3-642-54833-8"
+}
+
+@inproceedings{agda,
+author="Bove, Ana
+and Dybjer, Peter
+and Norell, Ulf",
+editor="Berghofer, Stefan
+and Nipkow, Tobias
+and Urban, Christian
+and Wenzel, Makarius",
+title="A Brief Overview of Agda - A Functional Language with Dependent Types",
+booktitle="Theorem Proving in Higher Order Logics",
+year="2009",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="73-78",
+abstract="We give an overview of Agda, the latest in a series of dependently typed programming languages developed in Gothenburg. Agda is based on Martin-L{\"o}f's intuitionistic type theory but extends it with numerous programming language features. It supports a wide range of inductive data types, including inductive families and inductive-recursive types, with associated flexible pattern-matching. Unlike other proof assistants, Agda is not tactic-based. Instead it has an Emacs-based interface which allows programming by gradual refinement of incomplete type-correct terms.",
+isbn="978-3-642-03359-9"
+}
+
+@inproceedings{idris,
+author={Brady, Edwin C.},
+title={IDRIS --: Systems Programming Meets Full Dependent Types},
+year={2011},
+isbn={9781450304870},
+publisher={Association for Computing Machinery},
+address={New York, NY, USA},
+url={https://doi.org/10.1145/1929529.1929536},
+doi={10.1145/1929529.1929536},
+abstract={Dependent types have emerged in recent years as a promising approach to ensuring program correctness. However, existing dependently typed languages such as Agda and Coq work at a very high level of abstraction, making it difficult to map verified programs to suitably efficient executable code. This is particularly problematic for programs which work with bit level data, e.g. network packet processing, binary file formats or operating system services. Such programs, being fundamental to the operation of computers in general, may stand to benefit significantly from program verification techniques. This paper describes the use of a dependently typed programming language, Idris, for specifying and verifying properties of low-level systems programs, taking network packet processing as an extended example. We give an overview of the distinctive features of Idris which allow it to interact with external systems code, with precise types. Furthermore, we show how to integrate tactic scripts and plugin decision procedures to reduce the burden of proof on application developers. The ideas we present are readily adaptable to languages with related type systems.},
+booktitle={Proceedings of the 5th ACM Workshop on Programming Languages Meets Program Verification},
+pages={43--54},
+numpages={12},
+keywords={data description, dependent types},
+location={Austin, Texas, USA},
+series={PLPV '11}
+}
+
+@inproceedings{cayenne,
+author={Augustsson, Lennart},
+title={Cayenne—a Language with Dependent Types},
+year={1998},
+isbn={1581130244},
+publisher={Association for Computing Machinery},
+address={New York, NY, USA},
+url={https://doi.org/10.1145/289423.289451},
+doi={10.1145/289423.289451},
+abstract={Cayenne is a Haskell-like language. The main difference between Haskell and Cayenne is that Cayenne has dependent types, i.e., the result type of a function may depend on the argument value, and types of record components (which can be types or values) may depend on other components. Cayenne also combines the syntactic categories for value expressions and type expressions; thus reducing the number of language concepts.Having dependent types and combined type and value expressions makes the language very powerful. It is powerful enough that a special module concept is unnecessary; ordinary records suffice. It is also powerful enough to encode predicate logic at the type level, allowing types to be used as specifications of programs. However, this power comes at a cost: type checking of Cayenne is undecidable. While this may appear to be a steep price to pay, it seems to work well in practice.},
+booktitle={Proceedings of the Third ACM SIGPLAN International Conference on Functional Programming},
+pages={239--250},
+numpages={12},
+keywords={type systems, module systems, language design, dependent types},
+location={Baltimore, Maryland, USA},
+series={ICFP '98}
+}
+
+@article{coq,
+title={An Introduction to Programming and Proving with Dependent Types in Coq},
+volume={3},
+url={https://jfr.unibo.it/article/view/1978},
+DOI={10.6092/issn.1972-5787/1978},
+abstract={Computer proof assistants vary along many dimensions. Among the mature implementations, the Coq system is distinguished by two key features. First, we have support for programming with dependent types in the tradition of type theory, based on dependent function types and inductive type families. Second, we have a domain-specific language for coding correct-by-construction proof automation. Though the Coq user community has grown quite large, neither of the aspects I highlight is widely used. In this tutorial, I aim to provide a pragmatic introduction to both, showing how they can bring significant improvements in productivity.},
+number={2},
+journal={Journal of Formalized Reasoning},
+author={Chlipala, Adam},
+year={2010},
+month={Jan.},
+pages={1--93} }
+
+@inproceedings{deputy,
+author="Condit, Jeremy
+and Harren, Matthew
+and Anderson, Zachary
+and Gay, David
+and Necula, George C.",
+editor="De Nicola, Rocco",
+title="Dependent Types for Low-Level Programming",
+booktitle="Programming Languages and Systems",
+year="2007",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="520-535",
+abstract="In this paper, we describe the key principles of a dependent type system for low-level imperative languages. The major contributions of this work are (1) a sound type system that combines dependent types and mutation for variables and for heap-allocated structures in a more flexible way than before and (2) a technique for automatically inferring dependent types for local variables. We have applied these general principles to design Deputy, a dependent type system for C that allows the user to describe bounded pointers and tagged unions. Deputy has been used to annotate and check a number of real-world C programs.",
+isbn="978-3-540-71316-6"
+}
+
+@techreport{deputy-2,
+title={Static analysis of C for hybrid type checking},
+author={Anderson, Zachary Ryan},
+year={2007},
+institution={Tech. Rep. EECS-2007-1, UC Berkeley}
+}
+
+@inproceedings{ccured,
+author={Necula, George C. and McPeak, Scott and Weimer, Westley},
+title={CCured: Type-Safe Retrofitting of Legacy Code},
+year={2002},
+isbn={1581134509},
+publisher={Association for Computing Machinery},
+address={New York, NY, USA},
+url={https://doi.org/10.1145/503272.503286},
+doi={10.1145/503272.503286},
+abstract={In this paper we propose a scheme that combines type inference and run-time checking to make existing C programs type safe. We describe the CCured type system, which extends that of C by separating pointer types according to their usage. This type system allows both pointers whose usage can be verified statically to be type safe, and pointers whose safety must be checked at run time. We prove a type soundness result and then we present a surprisingly simple type inference algorithm that is able to infer the appropriate pointer kinds for existing C programs.Our experience with the CCured system shows that the inference is very effective for many C programs, as it is able to infer that most or all of the pointers are statically verifiable to be type safe. The remaining pointers are instrumented with efficient run-time checks to ensure that they are used safely. The resulting performance loss due to run-time checks is 0-150\%, which is several times better than comparable approaches that use only dynamic checking. Using CCured we have discovered programming bugs in established C programs such as several SPECINT95 benchmarks.},
+booktitle={Proceedings of the 29th ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
+pages={128--139},
+numpages={12},
+location={Portland, Oregon},
+series={POPL '02}
+}
+
+@article{cyclone,
+title={Cyclone: A type-safe dialect of C},
+author={Grossman, Dan and Hicks, Michael and Jim, Trevor and Morrisett, Greg},
+journal={C/C++ Users Journal},
+volume={23},
+number={1},
+pages={112-139},
+year={2005}
+}
+
+@article{qube,
+title={QUBE-Array Programming with Dependent Types},
+author={Trojahner, Kai},
+journal={Institute of Software Engineering and Programming Languages of the University of Lübeck},
+year={2011}
+}
+
+@article{yices,
+title={The yices smt solver},
+author={Dutertre, Bruno and De Moura, Leonardo},
+journal={Tool paper at http://yices. csl. sri. com/tool-paper. pdf},
+volume={2},
+number={2},
+pages={1-2},
+year={2006}
+}
+
+@inproceedings{futhark,
+author={Henriksen, Troels and Serup, Niels G. W. and Elsman, Martin and Henglein, Fritz and Oancea, Cosmin E.},
+title={Futhark: Purely Functional GPU-Programming with Nested Parallelism and in-Place Array Updates},
+year={2017},
+isbn={9781450349888},
+publisher={Association for Computing Machinery},
+address={New York, NY, USA},
+url={https://doi.org/10.1145/3062341.3062354},
+doi={10.1145/3062341.3062354},
+abstract={Futhark is a purely functional data-parallel array language that offers a machine-neutral programming model and an optimising compiler that generates OpenCL code for GPUs. This paper presents the design and implementation of three key features of Futhark that seek a suitable middle ground with imperative approaches. First, in order to express efficient code inside the parallel constructs, we introduce a simple type system for in-place updates that ensures referential transparency and supports equational reasoning. Second, we furnish Futhark with parallel operators capable of expressing efficient strength-reduced code, along with their fusion rules. Third, we present a flattening transformation aimed at enhancing the degree of parallelism that (i) builds on loop interchange and distribution but uses higher-order reasoning rather than array-dependence analysis, and (ii) still allows further locality-of-reference optimisations. Finally, an evaluation on 16 benchmarks demonstrates the impact of the language and compiler features and shows application-level performance competitive with hand-written GPU code.},
+booktitle={Proceedings of the 38th ACM SIGPLAN Conference on Programming Language Design and Implementation},
+pages={556--571},
+numpages={16},
+keywords={parallel, compilers, functional language, GPGPU},
+location={Barcelona, Spain},
+series={PLDI 2017}
+}
+
+@inproceedings{futhark-size-parameters,
+author={Henriksen, Troels and Elsman, Martin},
+title={Towards Size-Dependent Types for Array Programming},
+year={2021},
+isbn={9781450384667},
+publisher={Association for Computing Machinery},
+address={New York, NY, USA},
+url={https://doi.org/10.1145/3460944.3464310},
+doi={10.1145/3460944.3464310},
+abstract={We present a type system for expressing size constraints on array types in an ML-style type system. The goal is to detect shape mismatches at compile-time, while being simpler than full dependent types. The main restrictions is that the only terms that can occur in types are array sizes, and syntactically they must be variables or constants. For those programs where this is not sufficient, we support a form of existential types, with the type system automatically managing the requisite book-keeping. We formalise a large subset of the type system in a small core language, which we prove sound. We also present an integration of the type system in the high-performance parallel functional language Futhark, and show on a collection of 44 representative programs that the restrictions in the type system are not too problematic in practice.},
+booktitle={Proceedings of the 7th ACM SIGPLAN International Workshop on Libraries, Languages and Compilers for Array Programming},
+pages={1--14},
+numpages={14},
+keywords={parallel programming, type systems, functional programming},
+location={Virtual, Canada},
+series={ARRAY 2021}
+}
+
+@inproceedings{hybrid-type-checking,
+author={Flanagan, Cormac},
+title={Hybrid Type Checking},
+year={2006},
+isbn={1595930272},
+publisher={Association for Computing Machinery},
+address={New York, NY, USA},
+url={https://doi.org/10.1145/1111037.1111059},
+doi={10.1145/1111037.1111059},
+abstract={Traditional static type systems are very effective for verifying basic interface specifications, but are somewhat limited in the kinds specifications they support. Dynamically-checked contracts can enforce more precise specifications, but these are not checked until run time, resulting in incomplete detection of defects.Hybrid type checking is a synthesis of these two approaches that enforces precise interface specifications, via static analysis where possible, but also via dynamic checks where necessary. This paper explores the key ideas and implications of hybrid type checking, in the context of the simply-typed λ-calculus with arbitrary refinements of base types.},
+booktitle={Conference Record of the 33rd ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
+pages={245--256},
+numpages={12},
+keywords={type systems, static checking, dynamic checking, contracts},
+location={Charleston, South Carolina, USA},
+series={POPL '06}
+}
+
+@inproceedings{dynamic-dependent-types,
+author="Ou, Xinming
+and Tan, Gang
+and Mandelbaum, Yitzhak
+and Walker, David",
+editor="Levy, Jean-Jacques
+and Mayr, Ernst W.
+and Mitchell, John C.",
+title="Dynamic Typing with Dependent Types",
+booktitle="Exploring New Frontiers of Theoretical Informatics",
+year="2004",
+publisher="Springer US",
+address="Boston, MA",
+pages="437-450",
+abstract="Dependent type systems are promising tools programmers can use to increase the reliability and security of their programs. Unfortunately, dependently-typed programming languages require programmers to annotate their programs with many typing specifications to help guide the type checker. This paper shows how to make the process of programming with dependent types more palatable by defining a language in which programmers have fine-grained control over the trade-off between the number of dependent typing annotations they must place on programs and the degree of compile-time safety. More specifically, certain program fragments are marked dependent, in which case the programmer annotates them in detail and a dependent type checker verifies them at compile time. Other fragments are marked simple, in which case they may be annotation-free and dependent constraints are verified at run time.",
+isbn="978-1-4020-8141-5"
+}
+
+@inproceedings{sage,
+title={Sage: Hybrid checking for flexible specifications},
+author={Gronski, Jessica and Knowles, Kenneth and Tomb, Aaron and Freund, Stephen N and Flanagan, Cormac},
+booktitle={Scheme and Functional Programming Workshop},
+volume={6},
+pages={93-104},
+year={2006}
+}
+
+@inproceedings{specsharp,
+author="Barnett, Mike
+and Leino, K. Rustan M.
+and Schulte, Wolfram",
+editor="Barthe, Gilles
+and Burdy, Lilian
+and Huisman, Marieke
+and Lanet, Jean-Louis
+and Muntean, Traian",
+title="The Spec{\#} Programming System: An Overview",
+booktitle="Construction and Analysis of Safe, Secure, and Interoperable Smart Devices",
+year="2005",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="49-69",
+abstract="The Spec{\#} programming system is a new attempt at a more cost effective way to develop and maintain high-quality software. This paper describes the goals and architecture of the Spec{\#} programming system, consisting of the object-oriented Spec{\#} programming language, the Spec{\#} compiler, and the Boogie static program verifier. The language includes constructs for writing specifications that capture programmer intentions about how methods and data are to be used, the compiler emits run-time checks to enforce these specifications, and the verifier can check the consistency between a program and its specifications.",
+isbn="978-3-540-30569-9"
+}
+
+@inproceedings{jvm-static,
+author={Higuchi, Tomoyuki and Ohori, Atsushi},
+title={A Static Type System for JVM Access Control},
+year={2003},
+isbn={1581137567},
+publisher={Association for Computing Machinery},
+address={New York, NY, USA},
+url={https://doi.org/10.1145/944705.944726},
+doi={10.1145/944705.944726},
+abstract={This paper presents a static type system for JAVA Virtual Machine (JVM) code that enforces an access control mechanism similar to the one found, for example, in a JAVA implementation. In addition to verifying type consistency of a given JVM code, the type system statically verifies that the code accesses only those resources that are granted by the prescribed access policy. The type system is proved to be sound with respect to an operational semantics that enforces access control dynamically, similarly to JAVA stack inspection. This result ensures that "well typed code cannot violate access policy." The paper then develops a type inference algorithm and shows that it is sound with respect to the type system and that it always infers a minimal set of access privileges. These results allows us to develop a static system for JVM access control without resorting to costly runtime stack inspection.},
+booktitle={Proceedings of the Eighth ACM SIGPLAN International Conference on Functional Programming},
+pages={227--237},
+numpages={11},
+keywords={stack inspection, type inference, JVM, type system, access control},
+location={Uppsala, Sweden},
+series={ICFP '03}
+}
+
+@inproceedings{dependent-types-bounds,
+author={Xi, Hongwei and Pfenning, Frank},
+title={Eliminating Array Bound Checking through Dependent Types},
+year={1998},
+isbn={0897919874},
+publisher={Association for Computing Machinery},
+address={New York, NY, USA},
+url={https://doi.org/10.1145/277650.277732},
+doi={10.1145/277650.277732},
+abstract={We present a type-based approach to eliminating array bound checking and list tag checking by conservatively extending Standard ML with a restricted form of dependent types. This enables the programmer to capture more invariants through types while type-checking remains decidable in theory and can still be performed efficiently in practice. We illustrate our approach through concrete examples and present the result of our preliminary experiments which support support the feasibility and effectiveness of our approach.},
+booktitle={Proceedings of the ACM SIGPLAN 1998 Conference on Programming Language Design and Implementation},
+pages={249--257},
+numpages={9},
+location={Montreal, Quebec, Canada},
+series={PLDI '98}
+}
+
+@inproceedings{bounds-specializer,
+author={Popeea, Corneliu and Xu, Dana N. and Chin, Wei-Ngan},
+title={A Practical and Precise Inference and Specializer for Array Bound Checks Elimination},
+year={2008},
+isbn={9781595939777},
+publisher={Association for Computing Machinery},
+address={New York, NY, USA},
+url={https://doi.org/10.1145/1328408.1328434},
+doi={10.1145/1328408.1328434},
+abstract={Arrays are intensively used in many software programs, including those in the popular graphics and game programming domains. Although the problem of eliminating redundant array bound checks has been studied for a long time, there are few works that attempt to be both aggressively precise and practical. We propose an inference mechanism that achieves both aims by combining a forward relational analysis with a backward precondition derivation. Our inference algorithm works for a core imperative language with assignments, and analyses each method once through a summary-based approach. Our inference is precise as it is both path and context sensitive. Through a novel technique that can strengthen preconditions, we can selectively reduce the sizes of formulae to support a practical inference algorithm. Moreover, we subject each inferred program to a flexivariant specialization that can achieve good tradeoff between elimination of array checks and code explosion concerns. We have proven the soundness of our approach and have also implemented a prototype inference and specialization system. Initial experiments suggest that such a desired system is viable.},
+booktitle={Proceedings of the 2008 ACM SIGPLAN Symposium on Partial Evaluation and Semantics-Based Program Manipulation},
+pages={177--187},
+numpages={11},
+keywords={safety verification, size properties, dependent types},
+location={San Francisco, California, USA},
+series={PEPM '08}
+}
+
+@inproceedings{refinement-types,
+title={Refinement types for ML},
+author={Freeman, Tim and Pfenning, Frank},
+booktitle={Proceedings of the ACM SIGPLAN 1991 conference on Programming language design and implementation},
+pages={268-277},
+publisher={Association for Computing Machinery},
+url={https://doi.org/10.1145/113445.113468},
+doi={10.1145/113445.113468},
+year={1991}
+}
+
+@techreport{shape-checking,
+title={Shape checking of array programs},
+author={Jay, C Barry and Sekanina, Milan},
+year={1996},
+institution={Citeseer}
+}
+
+@inproceedings{size-dependent-types,
+author={Bailly, Lubin and Henriksen, Troels and Elsman, Martin},
+title={Shape-Constrained Array Programming with Size-Dependent Types},
+year={2023},
+isbn={9798400702969},
+publisher={Association for Computing Machinery},
+address={New York, NY, USA},
+url={https://doi.org/10.1145/3609024.3609412},
+doi={10.1145/3609024.3609412},
+abstract={We present a dependent type system for enforcing array-size
+consistency in an ML-style functional array language. Our goal is
+to enforce shape-consistency at compile time and allow nontrivial
+transformations on array shapes, without the complexity such
+features tend to introduce in dependently typed languages. Sizes
+can be arbitrary expressions and size equality is purely
+syntactical, which fits naturally within a scheme that interprets
+size-polymorphic functions as having implicit arguments. When
+non-syntactical equalities are needed, we provide dynamic checking.
+In contrast to other dependently typed languages, we automate the
+book-keeping involved in tracking existential sizes, such as when
+filtering arrays. We formalise a large subset of the presented type
+system and prove it sound. We also discuss how to adapt the type
+system for a real implementation, including type inference, within
+the Futhark programming language.},
+booktitle={Proceedings of the 11th ACM SIGPLAN International Workshop on Functional High-Performance and Numerical Computing},
+pages={29--41},
+numpages={13},
+keywords={functional programming, type systems, parallel programming},
+location={Seattle, WA, USA},
+series={FHPNC 2023}
+}
+
+@inproceedings{dependent-from-tests,
+author="Zhu, He
+and Nori, Aditya V.
+and Jagannathan, Suresh",
+editor="D'Souza, Deepak
+and Lal, Akash
+and Larsen, Kim Guldstrand",
+title="Dependent Array Type Inference from Tests",
+booktitle="Verification, Model Checking, and Abstract Interpretation",
+year="2015",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="412--430",
+abstract="We present a type-based program analysis capable of inferring expressive invariants over array programs. Our system combines dependent types with two additional key elements. First, we associate dependent types with effects and precisely track effectful array updates, yielding a sound flow-sensitive dependent type system that can capture invariants associated with side-effecting array programs. Second, without imposing an annotation burden for quantified invariants on array indices, we automatically infer useful array invariants by initially guessing very coarse invariant templates, using test suites to exercise the functionality of the program to faithfully instantiate these templates with more precise (likely) invariants. These inferred invariants are subsequently encoded as dependent types for validation. Experimental results demonstrate the utility of our approach, with respect to both expressivity of the invariants inferred, and the time necessary to converge to a result.",
+isbn="978-3-662-46081-8"
+}
+
+@inproceedings{pattern-matching-python,
+author={Kohn, Tobias and van Rossum, Guido and Bucher II, Gary Brandt and Talin and Levkivskyi, Ivan},
+title={Dynamic Pattern Matching with Python},
+year={2020},
+isbn={9781450381758},
+publisher={Association for Computing Machinery},
+address={New York, NY, USA},
+url={https://doi.org/10.1145/3426422.3426983},
+doi={10.1145/3426422.3426983},
+abstract={Pattern matching allows programs both to extract specific information from complex data types, as well as to branch on the structure of data and thus apply specialized actions to different forms of data. Originally designed for strongly typed functional languages with algebraic data types, pattern matching has since been adapted for object-oriented and even dynamic languages. This paper discusses how pattern matching can be included in the dynamically typed language Python in line with existing features that support extracting values from sequential data structures.},
+booktitle={Proceedings of the 16th ACM SIGPLAN International Symposium on Dynamic Languages},
+pages={85--98},
+numpages={14},
+keywords={Dynamic Language, Python, Pattern Matching},
+location={Virtual, USA},
+series={DLS 2020}
+}
+
+@inproceedings{active-patterns,
+author="Erwig, Martin",
+editor="Kluge, Werner",
+title="Active patterns",
+booktitle="Implementation of Functional Languages",
+year="1997",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="21-40",
+abstract="Active patterns apply preprocessing functions to data type values before they are matched. This is of use for unfree data types where more than one representation exists for an abstract value: in many cases there is a specific representation for which function definitions become very simple, and active patterns just allow to assume this specific representation in function definitions. We define the semantics of active patterns and describe their implementation.",
+isbn="978-3-540-69239-3"
+}
+
+@inproceedings{non-linear-backtracking,
+author="Egi, Satoshi
+and Nishiwaki, Yuichi",
+editor="Ryu, Sukyoung",
+title="Non-linear Pattern Matching with Backtracking for Non-free Data Types",
+booktitle="Programming Languages and Systems",
+year="2018",
+publisher="Springer International Publishing",
+address="Cham",
+pages="3-23",
+abstract="Non-free data types are data types whose data have no canonical forms. For example, multisets are non-free data types because the multiset {\$}{\$}{\backslash}{\{}a,b,b{\backslash}{\}}{\$}{\$}has two other equivalent but literally different forms {\$}{\$}{\backslash}{\{}b,a,b{\backslash}{\}}{\$}{\$}and {\$}{\$}{\backslash}{\{}b,b,a{\backslash}{\}}{\$}{\$}. Pattern matching is known to provide a handy tool set to treat such data types. Although many studies on pattern matching and implementations for practical programming languages have been proposed so far, we observe that none of these studies satisfy all the criteria of practical pattern matching, which are as follows: (i) efficiency of the backtracking algorithm for non-linear patterns, (ii) extensibility of matching process, and (iii) polymorphism in patterns.",
+isbn="978-3-030-02768-1"
+}
+
+@article{non-linear-scoping,
+author={Satoshi Egi},
+title={Non-Linear Pattern-Matching against Unfree Data Types with Lexical Scoping},
+journal={CoRR},
+volume={abs/1407.0729},
+year={2014},
+url={http://arxiv.org/abs/1407.0729},
+eprinttype={arXiv},
+eprint={1407.0729},
+timestamp={Mon, 13 Aug 2018 16:48:43 +0200},
+biburl={https://dblp.org/rec/journals/corr/Egi14.bib},
+bibsource={dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{DBLP:conf/fopara/GastelKE15,
+author={Bernard van Gastel and Rody Kersten and Marko C. J. D. van Eekelen},
+editor={Marko C. J. D. van Eekelen and Ugo Dal Lago},
+title={Using Dependent Types to Define Energy Augmented Semantics of Programs},
+booktitle={Foundational and Practical Aspects of Resource Analysis - 4th International Workshop, {FOPARA} 2015, London, UK, April 11, 2015, Revised Selected Papers},
+series={Lecture Notes in Computer Science},
+volume={9964},
+pages={20-39},
+year={2015},
+url={https://doi.org/10.1007/978-3-319-46559-3\_2},
+doi={10.1007/978-3-319-46559-3\_2},
+timestamp={Tue, 14 May 2019 10:00:45 +0200},
+biburl={https://dblp.org/rec/conf/fopara/GastelKE15.bib},
+bibsource={dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{DBLP:journals/corr/GastelE17,
+author={Bernard van Gastel and Marko C. J. D. van Eekelen},
+editor={Guillaume Bonfante and Georg Moser},
+title={Towards Practical, Precise and Parametric Energy Analysis of {IT} Controlled Systems},
+booktitle={Proceedings 8th Workshop on Developments in Implicit Computational Complexity and 5th Workshop on Foundational and Practical Aspects of Resource Analysis, DICE-FOPARA@ETAPS 2017, Uppsala, Sweden, April 22-23, 2017},
+series={{EPTCS}},
+volume={248},
+pages={24-37},
+year={2017},
+url={https://doi.org/10.4204/EPTCS.248.7},
+doi={10.4204/EPTCS.248.7},
+timestamp={Wed, 09 Oct 2019 16:19:29 +0200},
+biburl={https://dblp.org/rec/journals/corr/GastelE17.bib},
+bibsource={dblp computer science bibliography, https://dblp.org}
+}
+
+@article{DBLP:journals/concurrency/KerstenGSME14,
+author={Rody W. J. Kersten and Bernard van Gastel and Olha Shkaravska and Manuel Montenegro and Marko C. J. D. van Eekelen},
+title={ResAna: a resource analysis toolset for (real-time) {JAVA}},
+journal={Concurr. Comput. Pract. Exp.},
+volume={26},
+number={14},
+pages={2432-2455},
+year={2014},
+url={https://doi.org/10.1002/cpe.3154},
+doi={10.1002/CPE.3154},
+timestamp={Mon, 02 Mar 2020 17:20:10 +0100},
+biburl={https://dblp.org/rec/journals/concurrency/KerstenGSME14.bib},
+bibsource={dblp computer science bibliography, https://dblp.org}
+}

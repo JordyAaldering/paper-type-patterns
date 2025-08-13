@@ -1,0 +1,107 @@
+\newcommand{\defined}{\texttt{defined}}
+\renewcommand{\exists}{\texttt{exists}}
+
+\section{Constraint resolution}
+
+We take a partial evaluation approach based on the idea of symbiotic expressions~\cite{sac-symbiotic}.
+Symbiotic expressions provide a method for algebraic simplification, based on expressions inserted into the code.
+We take a similar approach, by inserting the generated constraints into the program.
+Similarly to symbiotic expressions, the insertion of this code can potentially lead to further optimisation.
+Unlike symbiotic expressions, we propose that the inserted code is not necessarily removed after optimisation, in order to allow for run-time errors for constraints that could not statically be resolved.
+
+\subsection{Resolution algorithm}\label{sec:resoltion}
+
+Now that we have the necessary constraints for all arguments and features of a function signature, the next step is to transform each of those constraints to either a variable assignment, or to a boolean check expression.
+As discussed previously, the order in which the code for these constraints is inserted into the program is important.
+
+\noindent
+We use the dependencies found by \texttt{GTC} to derive the correct ordering.
+Following is the description of an algorithm that uses the dependencies to generate an ordered list of assign statements and check expressions, ensuring that the dependencies of those constraints are resolved in the correct order.
+
+We require two additional sets for this algorithm:
+\begin{enumerate}
+    \item \defined{}: a set which contains all identifiers that have thus far been defined.
+    Initially, these are only the arguments themselves.
+    \item \exists{}: a set which contains all identifiers that have remaining constraints.
+    These are initially all identifiers that occur in the type patterns of the function signature.
+\end{enumerate}
+
+\noindent
+This results in two ordered lists for the generated assignments and checks.
+These two lists will be inserted into the code as described in section~\ref{sec:generation}.
+The algorithm is repeated until no more code can be generated.
+At that point either every constraint has been resolved, or there are multiple constraints that cannot be resolved because they depend on each other in some way, in which case we raise an error and print the constraints that could not be resolved.
+
+\begin{figure}[hbt]
+\begin{lstlisting}[language=pseudocode]
+changed = true;
+
+while changed:
+  changed = false
+
+  for id in exists:
+    all_dependencies_resolved = true
+
+    constraints = env[id]
+    for entry in constraints:
+      deps, expr = entry
+      if union(deps, defined) is not empty:
+        all_dependencies_resolved = false
+        continue
+
+      if id is not in defined:
+        assignments += create_assign(id, expr)
+        defined += {id}
+      else:
+        checks += create_check(id, expr)
+
+      env[id] -= {entry}
+      changed = true
+
+    if all_dependencies_resolved:
+      exists -= {id}
+\end{lstlisting}
+\caption{Pseudo-code for the resolution algorithm}
+\label{fig:resolution-algorithm}
+\end{figure}
+
+The algorithm described in Fig.~\ref{fig:resolution-algorithm} iterates over all identifiers in the \exists{} set, which are the identifiers that have remaining constraints.
+It then iterates over the remaining constraints of those identifiers.
+If a constraint has dependencies that are not yet defined, then this constraint still has unresolved dependencies and is skipped.
+Otherwise there is a case distinction depending on whether the identifier itself has a definition yet.
+If not, an assignment to this identifier is generated from the value of the constraint and the identifier is added to the \defined{} set.
+Otherwise there already exists such a definition, and instead a check is generated to ensure that this definition is equal to the value of the constraint.
+
+Finally the entry is removed from the environment and we continue with the next constraint.
+After no more changes occur, if \exists{} is empty all constraints were able to be resolved, otherwise we have an ambiguous case and \exists{} contains the remaining constraints that could not be resolved due to circular dependencies.
+
+To illustrate such an ambiguous case we take another look at the selection function example.
+If we consider the array argument \texttt{int[n:outer,d:shp]} in isolation, we would receive the following environment \cenv{} from \texttt{GTC}:
+\begin{align*}
+    \mathbf{\{}\
+        \underline{n} \mapsto [&\langle\texttt{dimcalc}(arr,\ n),\ \{\underline{d}\}\rangle] \\
+        outer         \mapsto [&\langle\texttt{take}(n,\ \texttt{drop}(0,\ \texttt{shape}(arr))),\ \{n\}\rangle] \\
+        \underline{d} \mapsto [&\langle\texttt{dimcalc}(arr,\ d),\ \{\underline{n}\}\rangle] \\
+        shp           \mapsto [&\langle\texttt{take}(d,\ \texttt{drop}(n,\ \texttt{shape}(arr))),\ \{n,d\}\rangle]
+    \ \mathbf{\}}
+\end{align*}
+
+\noindent
+Here we immediately see an example of an ambiguous case that cannot be resolved by our algorithm, as \texttt{n} depends on \texttt{d} and vice versa.
+Already in the first iteration of the algorithm there is nothing that can be done, since each constraint has remaining dependencies.
+However if we include the index vector argument \texttt{int[n]}, a new entry is added in the environment for identifier \texttt{n}:
+\begin{align*}
+    \mathbf{\{}\
+        n     \mapsto [&\langle\texttt{dimcalc}(arr,\ n),\ \{d\}\rangle, \\
+            &\underline{\langle\texttt{shape}(idx)[0],\ \emptyset\rangle}] \\
+        outer \mapsto [&\langle\texttt{take}(n,\ \texttt{drop}(0,\ \texttt{shape}(arr))),\ \{n\}\rangle] \\
+        d     \mapsto [&\langle\texttt{dimcalc}(arr,\ d),\ \{n\}\rangle] \\
+        shp   \mapsto [&\langle\texttt{take}(d,\ \texttt{drop}(n,\ \texttt{shape}(arr))),\ \{n,d\}\rangle]
+    \ \mathbf{\}}
+\end{align*}
+
+\noindent
+In this case the algorithm is able to generate an assignment for this new constraint of \texttt{n}, because it has no dependencies.
+This results in \texttt{n} being added to the \defined{} set.
+Now that \texttt{n} is defined, the constraint for \texttt{d} can be resolved and an assignment to \texttt{d} is generated.
+Afterwards, the identifiers \texttt{n} and \texttt{d} are both defined and all remaining constraints can be resolved: an assignment is generated for \texttt{outer} and \texttt{shp}, and because \texttt{n} already exists a check is generated for the remaining constraint of \texttt{n}.

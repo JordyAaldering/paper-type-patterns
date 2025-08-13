@@ -1,0 +1,107 @@
+\documentclass[sigconf,screen]{acmart}
+
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+
+\usepackage{xcolor}
+\definecolor{blue}{cmyk}{1,0.8,0,0}
+\definecolor{console}{cmyk}{0,1,0.9,0.25}
+
+\usepackage{listings}
+\lstdefinelanguage{pseudocode}[]{}{%
+    basicstyle=\fontsize{8}{8}\selectfont\ttfamily,
+    keywords={while,for,in,if,else,is,not,true,false,continue}
+}
+\lstdefinelanguage{console}[]{}{%
+    basicstyle=\color{console}\fontsize{8}{8}\selectfont\ttfamily
+}
+\lstdefinelanguage{SaC}[]{}{%
+    keywords={int,float,bool,inline,return,dim,shape,genarray,reshape,iota,take,drop,floor,add,sel,guard,abort},
+    otherkeywords={->,|},
+    morecomment=[s]{int[}{]},
+    morecomment=[s]{float[}{]}
+}
+\lstset{%
+    language=SaC,
+    basicstyle=\fontsize{8}{8}\selectfont\ttfamily,
+    keywordstyle=\color{blue},
+    commentstyle=\color{blue},
+    showstringspaces=false,
+}
+
+\newcommand{\tpdot}{\texttt{\textbf{.}}}
+\newcommand{\tpplus}{\texttt{+}}
+\newcommand{\tpstar}{\texttt{*}}
+\newcommand{\tpnum}{\texttt{n}}
+\newcommand{\tpnumshp}[2][\texttt{n}]{#1\texttt{:}#2}
+\newcommand{\tpidshp}[2]{#1\texttt{:}#2}
+\newcommand{\rest}{\ensuremath{tl}}
+\newcommand{\atp}[4]{\ensuremath{\texttt{ATP}(#1,\,#2,\,#3,\,#4)}}
+\newcommand{\fshp}{\texttt{kshp}}
+\newcommand{\fdim}{\texttt{kdim}}
+\newcommand{\vdim}{\texttt{vdim}}
+\newcommand{\gtc}[4]{\ensuremath{\texttt{GTC}(#1\,v,\,#2,\,#3,\,#4)}}
+\newcommand{\cdim}{\texttt{cdim}}
+\newcommand{\deps}{\texttt{deps}}
+\newcommand{\cenv}{\ensuremath{\sigma{}}}
+\newcommand{\envmap}[3]{\ensuremath{[#1\mapsto\langle{}#3,\,#2\rangle{}]}}
+
+\title{Type Patterns: Pattern Matching on Shape-Carrying Array Types}
+
+\author{Jordy Aaldering}
+\email{Jordy.Aaldering@ru.nl}
+\affiliation{%
+    \institution{Radboud University}
+    \city{Nijmegen}
+    \country{Netherlands}
+}
+\author{Sven-Bodo Scholz}
+\email{SvenBodo.Scholz@ru.nl}
+\affiliation{%
+    \institution{Radboud University}
+    \city{Nijmegen}
+    \country{Netherlands}
+}
+\author{Bernard van Gastel}
+\email{Bernard.vanGastel@ru.nl}
+\affiliation{%
+    \institution{Radboud University}
+    \city{Nijmegen}
+    \country{Netherlands}
+}
+
+\copyrightyear{2023}
+\acmYear{2023}
+\setcopyright{rightsretained}
+\acmConference[IFL 2023]{The 35th Symposium on Implementation and Application of Functional Languages}{August 29--31, 2023}{Braga, Portugal}
+\acmBooktitle{The 35th Symposium on Implementation and Application of Functional Languages (IFL 2023), August 29--31, 2023, Braga, Portugal}\acmDOI{10.1145/3652561.3652572}
+\acmISBN{979-8-4007-1631-7/23/08}
+
+\begin{document}
+
+\input{sections/abstract}
+
+\maketitle
+
+\input{sections/introduction}
+\input{sections/sac}
+\input{sections/syntax}
+\input{sections/examples}
+\input{sections/analyse}
+\input{sections/generate}
+\input{sections/resolution}
+\input{sections/generation}
+\input{sections/return}
+\input{sections/conditions}
+\input{sections/casestudy}
+\input{sections/related}
+\input{sections/conclusion}
+
+\begin{acks}
+The authors thank Peter Achten, Robert Bernecky, Thomas Koopman, and the anonymous reviewers, for proofreading the paper and providing helpful suggestions to improve it.
+\end{acks}
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{bibliography}
+
+\end{document}

@@ -1,0 +1,72 @@
+\section{Case study}
+
+In section~\ref{sec:examples} we have seen an implementation of the \texttt{take} function, which is used in practice in many array programs.
+Applications of this function are prone to out-of-bounds errors: the shape vector argument can have too many elements, or one of its elements can be greater than the corresponding extent in the array argument.
+Following is an example of this first case, where the array argument is one-dimensional but a two-element shape argument is provided.
+\begin{lstlisting}
+arr = genarray ([10], 0f);
+res = take ([7,9], arr);
+\end{lstlisting}
+
+\noindent
+Without the use of type patterns, this invalid application of \texttt{take} produces the following compile time error:
+\begin{lstlisting}[language=console]
+argument #1 should not exceed the shape of
+argument #2 of "_drop_SxV_"; types found:
+int{2} and int[1]
+\end{lstlisting}
+
+\noindent
+This error may come at a surprise as our program does not even make direct use of \verb|_drop_SxV_|.
+To find out where this comes from, users can enable a stack trace. For our example, this yields:
+\begin{lstlisting}[language=console,escapechar=@]
+./example.sac:6: error:
+   -- in Array::sel( int[2], float[.])
+@\vspace{-7pt}@
+./example.sac:12: error:
+   -- in _MAIN::take( int[2]{7,9}, float[.])
+@\vspace{-7pt}@
+./example.sac:18: error:
+   -- in _MAIN::foo( float[.])
+\end{lstlisting}
+
+\noindent
+In this case, we can see that the failing application of \verb|_drop_SxV_| stems from a call to the selection function
+in the standard library (here: \verb|Array|) which in turn was called by our version of \verb|take|. However,
+it is not immediately clear that an erroneous call of \verb|take| is the culprit, as we see the entire stack trace.
+In particular when dealing with long call sequences, a manual check where the unwanted function call happens can become very tedious.
+
+In contrast, the type pattern described in this paper enable the compiler to directly point to the erroneous call.
+With type patterns, we get the following pre-condition compile time error:
+\begin{lstlisting}[language=console]
+Type pattern error in application of take:
+dimensionality of argument `arr' is too small,
+could not assign a non-negative value to `m'
+in `m:inner'
+\end{lstlisting}
+
+\noindent
+Similarly, type patterns also improve error messages from function implementations that do not meet the co-domain constraints, even if the domain constraints are met.
+For example, let us assume a problem within the definition of take, where the upper bound incorrectly uses a $\leq$ instead of $<$, i.e., we have:
+\begin{lstlisting}
+return { iv -> arr[iv] | iv <= shp };
+\end{lstlisting}
+
+\noindent
+Furthermore, let us assume we now call \verb|take([10], arr)|.
+Without type patterns, we get an error from the out of bounds selection:
+\begin{lstlisting}[language=console]
+Scalar constraint `SACp_eat_43 (10) <
+SACp_emal_7118__uprf_2476 (10)' violated
+\end{lstlisting}
+
+\noindent
+If we add type patterns to the definition of \texttt{take} we instead get a more descriptive post-condition error message, which makes it clear that there is a mistake in the definition of \texttt{take}:
+\begin{lstlisting}[language=console]
+Type pattern error in definition of take: the
+found value of `shp' in `n:shp' of the return
+value is not equal to the value of argument `shp'
+\end{lstlisting}
+
+\noindent
+We even obtain this error for examples such as \verb|take([8], arr)| where this bug goes unnoticed in the variant without type patterns.

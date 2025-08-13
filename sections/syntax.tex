@@ -1,0 +1,96 @@
+\section{Introducing type patterns}
+
+We introduce type patterns from the perspective of introducing a pattern matching mechanism, as this matches more directly with the way we map them into the pre-existing hybrid type system of SaC.
+An alternative way to think about type patterns is to see them as ways to introduce types, through the introduction of variables within type signatures of function definitions.
+
+\subsection{Syntax of type patterns}
+
+We start out with the syntax of type patterns, shown in Figure~\ref{fig:syntax}.
+
+\begin{figure}[hbt]
+\begin{verbatim}
+<pattern>  ::= <type> '[' <feature> (',' <feature>)* ']'
+
+<feature>  ::= <single>
+            |  <multiple>
+
+<single>   ::= '.'
+            |  <num>
+            |  <id>
+
+<multiple> ::= '*'
+            |  '+'
+            |  <num> ':' <id>
+            |  <id> ':' <id>
+\end{verbatim}
+\caption{EBNF for type patterns}
+\label{fig:syntax}
+\end{figure}
+
+\noindent
+This syntax extends of the notion of array types from SaC, providing more syntactical flexibility and introducing variables within these types.
+Similar to the types in SaC, type patterns consist of an element type followed by a shape specification in square brackets.
+The shape specification is a pattern, which consists of a list of `features'.
+These features either describe a single rank of the argument, or a larger slice (a sub-vector) of its shape vector.
+
+Single dimensions are captured by the \verb|<single>| rule in Figure~\ref{fig:syntax} and can be denoted by the `\tpdot{}' symbol, a constant number, or a variable name.
+A fixed number requires the length of the corresponding rank component to match that very number, whereas the `\texttt{.}' symbol allows for an arbitrary extent.
+If instead a variable is being used, the extent found needs to match all other occurrences of that very variable within a given function definition.
+For example, consider the type pattern \texttt{int[n,n]}.
+It allows for square matrices of arbitrary size $\texttt{n} \times \texttt{n}$ where \texttt{n} is a non-negative integer value.
+
+Rank-polymorphism requires the ability to denote a statically unknown number of ranks.
+To cater for this, the proposed type patterns support features that capture slices of a given shape.
+These are captured by the \verb|<multiple>| rule in Figure~\ref{fig:syntax}.
+We distinguish four cases, depending on the rank of the slice we want to match, and whether we are interested in the slice itself or not.
+If we are not interested in the slice itself, we can use one of the symbols `\texttt{+}' and `\texttt{*}'.
+They match any slice of at least rank 1 or 0, respectively.
+
+If we are interested in the slice itself, the feature consists of two components separated by a `\texttt{:}' symbol.
+The first component relates to the rank of that slice, whereas the second component relates to the slice itself, i.e. the lengths of the corresponding axes.
+For the rank component, similar to the single-rank features, we can either use a fixed number or an identifier.
+For example, \texttt{int[3:shp]} matches rank 3 arrays only, and matches the entire shape vector against the variable \texttt{shp} that will thus be a three-element vector.
+Note here that variables after the `\texttt{:}' symbol, such as \texttt{shp}, denote slices and therefore always represent vectors, even if they match no ranks (empty vector) or individual ranks (singleton vector).
+For example, a type pattern \texttt{int[1:n,1:n]}, similar to the \texttt{int[n,n]} example above, matches arbitrary sized square matrices, but \texttt{n} now is a singleton vector rather than a scalar value.
+
+Finally we have the case where the rank of the slice is also a variable, enabling a match of a variable-rank slice of an array shape.
+Here, the first component matches against the rank of the slice, and the second component again matches against the slice itself.
+For example, the pattern \texttt{int[d:shp]} matches arrays of arbitrary shape, and binds the variable \texttt{d} to the rank of the array, and the variable \texttt{shp} to the shape of the array.
+
+These features can be combined to create complex type patterns.
+Consider for example a type pattern \texttt{int[5,n,d:shp]} \texttt{v}.
+It matches any shape of at least rank 2, whose extent in the first axis is exactly five, and whose extent in the second axis is \texttt{n}.
+Any potentially remaining axes are bound to the vector \texttt{shp}.
+These variables (\texttt{n}, \texttt{d}, and \texttt{shp}) can also be used in the function body.
+Following are some examples for arguments \texttt{v} and the resulting values of \texttt{n}, \texttt{d}, and \texttt{shp}.
+
+\begin{table}[ht!]
+\ttfamily
+\begin{tabular}{lllll}\hline
+    shape(v)             & 5 & n & d & shp       \\\hline
+    \text{}[5,1]         & 5 & 1 & 0 & []        \\
+    \text{}[5,1,7]       & 5 & 1 & 1 & [7]       \\
+    \text{}[5,0,1,2]     & 5 & 0 & 2 & [1,2]     \\
+    \text{}[5,2,1,2,3,4] & 5 & 2 & 4 & [1,2,3,4] \\\hline
+\end{tabular}
+\end{table}
+
+\noindent
+Variable names may be used more than once.
+For example, the variable \texttt{n} can be reused in a variable-rank feature \texttt{[5,n,n:shp]}~\texttt{v}.
+This pattern matches arrays of at least rank 2 whose extent in the second axis determines the number of ranks that follow.
+Some examples of matching shapes are:
+
+\begin{table}[ht!]
+\ttfamily
+\begin{tabular}{llll}\hline
+    shape(v)             & 5 & n & shp       \\\hline
+    \text{}[5,0]         & 5 & 0 & []        \\
+    \text{}[5,1,0]       & 5 & 1 & [0]       \\
+    \text{}[5,1,42]      & 5 & 1 & [42]      \\
+    \text{}[5,4,1,2,3,4] & 5 & 4 & [1,2,3,4] \\\hline
+\end{tabular}
+\end{table}
+
+\noindent
+Note that \texttt{d} in the first example, and \texttt{n} in the second example, are equal to the length of \texttt{shp}, which is always the case for such variable-rank patterns.

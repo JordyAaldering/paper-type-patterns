@@ -1,0 +1,109 @@
+\subsection{Code generation}\label{sec:generation}
+
+At this point these ordered lists of generated assignments and checks can be inserted into the program.
+Special care needs to be taken to ensure that the generated code is inserted at the most optimal location in the program.
+
+To provide the compiler with as much static information as possible, the generated assignments and checks should preferably be inserted around the call site of the corresponding function, where typically more information about the rank, shape, or values of the arguments is statically available.
+This makes it more likely that the checks can statically be resolved, allowing for more type errors at compile time and reducing overhead at run-time.
+However a static dispatch is not always possible, such as for overloaded functions.
+In this case we have no choice but to insert the generated code into the function body instead.
+
+To cater for both cases with a single implementation, we rely on the inlining capabilities of the compiler.
+Inlining ensures that if a call site of a function has been statically dispatched, that call site is replaced by the body of the corresponding function, which typically allows for better optimisation.
+
+To illustrate how the code generation is implemented we continue with the selection function as our running example:
+\begin{lstlisting}
+int[d:shp]
+sel(int[n] idx, int[n:outer,d:shp] arr)
+{
+    return { iv -> arr[idx ++ iv] | iv < shp };
+}
+\end{lstlisting}
+
+\noindent
+In order to make use of the inlining capabilities of the compiler, we wrap this implementation function into a stub that we always allow to be inlined.
+This stub first checks the constraints of the given arguments with a new inline function \texttt{sel\_pre}, and then applies the original function definition \texttt{sel\_impl}.
+This replacement ensures that all applications of \texttt{sel} now point to this new function definition containing the corresponding checks, making it possible to execute this compiler step early in the compilation process, before function calls have been dispatched.
+Now if an application of \texttt{sel} is able to be dispatched, the generated checks can be inlined to the call site of this function application.
+\begin{lstlisting}
+inline int[*]
+sel(int[.] idx, int[*] arr)
+{
+    pred = sel_pre(idx, arr);
+    result = sel_impl(idx, arr);
+    return result;
+}
+\end{lstlisting}
+
+\noindent
+Note that the arguments themselves no longer contain type patterns and are now SaC types, as these were transformed by \texttt{ATP} in section \ref{sec:atp} in order to make these function signatures compatible with the type checker.
+
+Similarly to \cite{sac-contracts}, we need to ensure that the compiler does not optimise away the generated checks.
+To achieve this we define a new primitive function: \texttt{guard}, that acts as a barrier for optimisation and code re-writes.
+This function expects \texttt{n} arbitrary values, \texttt{n} corresponding types, and a boolean predicate.
+Each type at index $i$ is the type of the corresponding value at index $i$ as it has been defined by the function signature.
+The types of the result values of these guards are then based on these type arguments, instead of the actual types of these arguments.
+We require this to avoid premature optimisation resulting from a specialisation of the arguments.
+Then if the predicate is true this guard function behaves as an identity function on these \texttt{n} arguments, otherwise an error is raised and the program aborts.
+This behaviour can occur at run-time, but also at compile-time, allowing the compiler to optimise away checks that are statically known to be true.
+
+We surround the application of \texttt{sel\_impl} with guards on the input values and the result value, that rely on the predicate returned by \texttt{sel\_pre}.
+This avoids premature optimisations based on either the input values or output type of \texttt{sel\_impl}.
+\begin{lstlisting}
+inline int[*]
+sel(int[.] idx, int[*] arr)
+{
+    pred = sel_pre(idx, arr);
+    idx, arr = guard(idx, arr,
+                     int[.], int[*], pred);
+    result = sel_impl(idx, arr);
+    result = guard(result, int[*], pred);
+    return result;
+}
+\end{lstlisting}
+
+\noindent
+Since the implementation function might make use of the variables defined in the type patterns of its arguments, we prepend the generated assignment to the original function body.
+This allows the variable \texttt{shp} from the selection example to be used directly in the body of that function.
+\begin{lstlisting}[escapechar=@]
+int[*]
+sel_impl(int[.] idx, int[*] arr)
+{
+    n = shape(idx)[0];
+    outer = take(n, shape(arr));
+    d = dim(arr) - n;
+    @\underline{shp}@ = take(d, drop(n, shape(arr)));
+
+    return { iv -> arr[idx ++ iv] | iv < @\underline{shp}@ };
+}
+\end{lstlisting}
+
+\noindent
+As opposed to the \texttt{sel} stub, this implementation function is not always inlined.
+We only inline this implementation function if the developer marked the original function as inline, which avoids us from inlining a function that the developer did not intend to.
+
+The body of the check function \texttt{sel\_pre} contains the generated assignments, followed by the generated checks.
+If all checks succeed true is returned, otherwise we abort the program with a descriptive error message.
+In order to comply with the type checker, these aborts are of the same type as \texttt{pred}.
+They are weaved into the program using if-expressions, which makes it easy to insert additional checks and makes for a simple and readable implementation.
+\begin{lstlisting}
+inline bool
+sel_pre(int[.] idx, int[*] arr)
+{
+    n = shape(idx)[0];
+    outer = take(n, shape(arr));
+    d = dim(arr) - n;
+    shp = take(d, drop(n, shape(arr)));
+
+    pred = true;
+    pred = n == dim(arr) - d ? pred
+        : abort("Type pattern error ...");
+    return pred;
+}
+\end{lstlisting}
+
+\noindent
+A drawback of pulling the generated assignments and checks out of the original function definition and moving them to separate functions, is that we require two instances of the assignments to the features of type patterns, once in the check in \texttt{sel\_pre}, and once in the implementation function \texttt{sel\_impl}.
+This drawback is mitigated by the fact that performance-critical code is often inlined, in which case common sub-expression elimination can be applied to remove these duplicate definitions.
+Additionally, these functions might insert assignments for features that are not used in the function body, such as the variable \texttt{outer} from the example.
+This issue is easily resolved by applying dead code removal.

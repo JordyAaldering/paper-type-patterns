@@ -1,0 +1,57 @@
+\section{Introduction}
+
+Array programming languages play a crucial role in a wide range of data-centric applications, where the manipulation of multi-dimen\-sional arrays is at the core of many computational tasks.
+In this domain, understanding and controlling the rank and shape of arrays is crucial, as they directly influence the correctness and efficiency of algorithms.
+
+While array languages traditionally strive for universal applicability of operators to arrays of arbitrary rank and shape, some minimal restrictions on argument domains are usually inevitable, be it to avoid out-of-bound accesses, or to ensure some other structural consistency.
+Unfortunately, the nature of these constraints is typically not only related to ranks and shapes of arguments alone, but to the values of arguments and return types as well.
+The most prominent example for such a situation is element selection, which requires the index argument to have a value that is within the bounds of the shape of the array argument.
+
+Using advanced type systems to provide static guarantees for such domain restrictions is highly desirable.
+It makes these constraints explicit, provides the means to mechanically identify violations of them, and it opens the door for better code optimisation.
+The value-dependent nature of these constraints, in the context of array programming languages, has led to several different type systems~\cite{indexed, cube, dependent-types, futhark-size-parameters, remora} that try to balance the trade-offs between readability of code, decidability of the type system, and expressiveness of the language.
+Although most of these approaches prioritise decidability, in this paper we take a different approach.
+Rather than starting out from a type system, we start out from a notation for domain constraints that aims at programming productivity.
+Readability of domain constraints without any restrictions in the expressiveness of the language is the primary goal of this work.
+
+We introduce variables into a notation for shape-carrying type signatures that can be seen as pattern matching constructs for array shapes.
+This enables programmers to conveniently refer to argument shapes and shape-components in function bodies through these variables.
+Predicates on these variables can specify arbitrary relationships between argument domains and result co-domains.
+Similar notations exist in prior type-based work, such as~\cite{dependent-types, futhark-size-parameters}, but our approach takes the idea further by introducing support for rank-polymorphism and by enabling specifications of arbitrarily complex relations between domains and co-domains.
+
+Given the expressiveness of these type patterns, a full implementation within the context of a type system would for many practical examples raise decidability issues.
+Several programs would require explicit assertions on program inputs, other programs would require additional proofs to aid the type system in proving static correctness.
+Practical experience in the context of fully dependently typed languages such as Agda~\cite{agda} demonstrates that such proofs typically require non-trivial modelling which would be incompatible with our quest for readability and programming productivity.
+
+Therefore, we suggest to map our type patterns into a less powerful type system where we generate explicit constraints, that either can be resolved using partial evaluation techniques such as~\cite{sac-symbiotic, sac-contracts}, or that can produce run-time checks and errors, which aims to assist programmers in identifying incompatibilities at the earliest possible stage.
+We chose the type system of Single assignment C (SaC)~\cite{sac, sac-productivity} as our target here, since it already builds on the ideas of partial evaluation.
+We expand on previous work~\cite{sac-user-constraints, sac-hybrid-types} which investigates how constraints on array shapes can be introduced.
+
+% Dependent types
+Whilst type patterns share similarities with dependent types, the choice of static or dynamic checking makes the two clearly distinct.
+Whereas dependent types consider statically provable programs as their goal, our goal is to maximise programmer productivity.
+% Hybrid types
+One might then see type patterns as a form of hybrid type checking, but that would still require a type formalism that captures type patterns in their entirety which we intentionally avoid.
+
+% Pattern matching
+Type patterns also share similarities with pattern matching.
+Whilst pattern matching can be applied generally, we focus on array properties, specifically at rank and shape-components.
+In contrast to the pattern matching found in most functional languages, we allow the same variable to be defined multiple times in order to denote constraints between those ranks and shapes.
+Another aspect that sets type patterns apart from conventional pattern matching, is
+the fact that type patterns occur within the type signatures of functions rather than within function bodies.
+
+% Syntactic sugar
+Since type patterns do not fit into any of these categories, one might then believe that they are simply syntactic sugar.
+But again, this is not the case.
+Whilst type patterns are indeed rewritten to pre-existing code during compilation,
+they are non-trivially woven into the program in order to provide as much optimisation and static analysis as possible, and enabling the automatic generation of descriptive error messages explicitly relating to the type patterns defined in the source code.
+
+Our contributions are:
+\begin{itemize}
+    \item Type Patterns as an amalgamation of type specification and pattern matching, in the context of functions on arrays.
+    \item Several examples demonstrating the readability, expressiveness, and effectiveness of the proposed approach.
+    \item A formal mapping from type patterns into the pre-existing type system of SaC.
+    \item A formal mapping from type patterns into pre- and post-conditions, as well as into code that actually performs pattern matching on argument and return value shapes.
+    \item A sketch of an implementation in the context of the SaC compiler ecosystem, providing details on how the constraints are woven into the data-flow, enabling static feedback through partial evaluation.
+    \item An implementation of type patterns in the SaC compiler\footnote{\url{https://sac-home.org}} and its standard library\footnote{\url{https://github.com/SacBase/Stdlib}}.
+\end{itemize}
